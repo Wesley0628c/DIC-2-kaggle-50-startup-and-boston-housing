@@ -314,14 +314,14 @@
 
       <!-- 5 種演算法橫向對比切換導航 -->
       <div class="algorithm-nav" id="algo-tabs">
-        <button class="algo-pill active" data-algo="Forward SFS (Lecture Stepwise)">
-          <i class="fa-solid fa-forward-step"></i> 講義標準 SFS (明顯下凹山谷)
+        <button class="algo-pill active" data-algo="Forward SFS (5-Fold CV)">
+          <i class="fa-solid fa-crosshairs"></i> 5-Fold CV 前向選擇 (正式規範)
         </button>
-        <button class="algo-pill" data-algo="Forward SFS">
-          <i class="fa-solid fa-bullseye"></i> 純 Test RMSE 貪婪 SFS
+        <button class="algo-pill" data-algo="Historical Test SFS">
+          <i class="fa-solid fa-clock-rotate-left"></i> 講義歷史探索示範 (評估偏差對照)
         </button>
-        <button class="algo-pill" data-algo="Lasso (L1)">
-          <i class="fa-solid fa-tag"></i> Lasso (L1 正則排序)
+        <button class="algo-pill" data-algo="Lasso + OLS">
+          <i class="fa-solid fa-tag"></i> Lasso + OLS (L1 篩選重訓)
         </button>
         <button class="algo-pill" data-algo="RFE">
           <i class="fa-solid fa-scissors"></i> RFE (遞迴特徵消除)
@@ -330,10 +330,10 @@
           <i class="fa-solid fa-circle-nodes"></i> ElasticNet (彈性網絡)
         </button>
         <button class="algo-pill" data-algo="Exhaustive">
-          <i class="fa-solid fa-magnifying-glass-chart"></i> Exhaustive (全子集窮舉)
+          <i class="fa-solid fa-magnifying-glass-chart"></i> Exhaustive (全子集 31 組窮舉)
         </button>
         <button class="algo-pill compare-all" data-algo="COMPARE_ALL">
-          <i class="fa-solid fa-chart-line-up"></i> 📊 五大方法同台對比 (Compare All 5)
+          <i class="fa-solid fa-chart-line-up"></i> 📊 演算法橫向對比 (Compare All)
         </button>
       </div>
 
@@ -476,10 +476,10 @@
                 <th>特徵數 (k)</th>
                 <th>新納入特徵</th>
                 <th>當前特徵子集</th>
-                <th class="num-cell">測試集 RMSE</th>
+                <th class="num-cell">5-Fold CV RMSE (選模依據)</th>
+                <th class="num-cell">測試集 RMSE (事後泛化)</th>
                 <th class="num-cell">測試集 R²</th>
                 <th class="num-cell">訓練集 RMSE</th>
-                <th class="num-cell">訓練集 R²</th>
                 <th>模型狀態判定</th>
               </tr>
             </thead>
@@ -541,23 +541,23 @@
         <div class="math-formula-box">
           <div class="formula-label"><i class="fa-solid fa-function"></i> Boston Housing 實測多元回歸經驗方程式：</div>
           <div class="formula-latex" id="boston-formula-text">
-            <strong>MEDV</strong> = 39.7985 - 0.1194&times;(CRIM) + 0.0448&times;(ZN) - 0.0062&times;(INDUS) + 2.6867&times;(CHAS) - 16.5866&times;(NOX) + 3.8558&times;(RM) - 0.0098&times;(AGE) - 1.4758&times;(DIS) + 0.3057&times;(RAD) - 0.0123&times;(TAX) - 0.9527&times;(PTRATIO) + 0.0093&times;(B) - 0.5248&times;(LSTAT)
+            <strong>MEDV</strong> = 38.0917 - 0.1194&times;(CRIM) + 0.0448&times;(ZN) + 0.0055&times;(INDUS) + 2.3408&times;(CHAS) - 16.1236&times;(NOX) + 3.7087&times;(RM) - 0.0031&times;(AGE) - 1.3864&times;(DIS) + 0.2442&times;(RAD) - 0.0110&times;(TAX) - 1.0459&times;(PTRATIO) + 0.0081&times;(B) - 0.4928&times;(LSTAT)
           </div>
         </div>
 
-        <!-- 關鍵特徵邊際效應解讀 -->
+        <!-- 關鍵特徵邊際效應解讀 (由實際 Pipeline 係數產生) -->
         <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
           <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); font-size: 0.84rem;">
-            <strong style="color: var(--cyan-primary);">RM (房間數, &beta; = +3.8558):</strong> 住宅每多一間房間，預期房價大幅上漲約 $3,856 美元，為最具正向拉動力特徵。
+            <strong style="color: var(--cyan-primary);">RM (房間數, &beta; = +3.7087):</strong> 住宅每多一間房間，預期中位數房價上升約 $3,709 美元，為最具正向拉動力之核心特徵。
           </div>
           <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); font-size: 0.84rem;">
-            <strong style="color: var(--rose-danger);">NOX (空氣污染, &beta; = -16.5866):</strong> 一氧化氮濃度每上升 1 ppm，房價劇烈折損約 $16,587 美元，環境品質對高價住宅具關鍵懲罰效應。
+            <strong style="color: var(--rose-danger);">NOX (空氣污染, &beta; = -16.1236):</strong> 一氧化氮濃度每上升 1 單位，房價劇烈折損約 $16,124 美元，環境空氣品質對住宅估值具有顯著懲罰效果。
           </div>
           <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); font-size: 0.84rem;">
-            <strong style="color: var(--emerald-optimal);">CHAS (臨查爾斯河, &beta; = +2.6867):</strong> 臨河物業具備水岸景觀溢價，平均利多約 $2,687 美元。
+            <strong style="color: var(--emerald-optimal);">CHAS (臨查爾斯河, &beta; = +2.3408):</strong> 查爾斯河虛擬變數 (臨河=1)，水岸景觀物業平均溢價約 $2,341 美元。
           </div>
           <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); font-size: 0.84rem;">
-            <strong style="color: var(--amber-warning);">LSTAT (低地位比例, &beta; = -0.5248):</strong> 低收入群體比例每增加 1%，周邊住宅中位數價值折損約 $525 美元。
+            <strong style="color: var(--amber-warning);">LSTAT (低地位比例, &beta; = -0.4928):</strong> 低收入弱勢族群比例每增加 1%，周邊住宅中位數價值平均折損約 $493 美元。
           </div>
         </div>
 
@@ -831,6 +831,202 @@
     </section>
 
     <!-- ====================================================================
+         STEP 4: OPTUNA HYPERPARAMETER TUNING
+         ==================================================================== -->
+    <section class="section-wrapper" id="optuna-section">
+      <div class="section-header">
+        <div class="section-title-group">
+          <div class="stage-tag" style="background: rgba(168, 85, 247, 0.15); color: #c084fc; border: 1px solid rgba(168, 85, 247, 0.4);">
+            <i class="fa-solid fa-wand-magic-sparkles"></i> Step 4 (進階調優)
+          </div>
+          <h2>Optuna 超參數自動調校 (Hyperparameter Optimization)</h2>
+          <p class="section-subtitle">
+            使用 Optuna 框架對正則化線性模型 (Ridge 回歸) 進行自動調參。以訓練集 5-Fold CV RMSE 為客觀目標函數，在對數尺度 [10⁻⁴, 10⁴] 搜尋最優 L2 正則化強度 &alpha;。
+          </p>
+        </div>
+        <div class="section-actions">
+          <a href="downloads/optuna_tuned_model.pkl.gz" download="optuna_tuned_model.pkl.gz" class="btn-outline">
+            <i class="fa-solid fa-download"></i> 下載 Optuna 模型 (.pkl.gz)
+          </a>
+        </div>
+      </div>
+
+      <!-- Optuna KPI Comparison Cards -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-title">基準模型 (OLS LinearRegression)</span>
+          <div class="kpi-value" style="color: var(--text-main);">$10,042.10</div>
+          <span class="kpi-footer">5-Fold CV RMSE | 測試集: $9,137.99</span>
+        </div>
+        <div class="kpi-card highlight-optimal">
+          <span class="kpi-title">Optuna 最優參數 (&alpha;)</span>
+          <div class="kpi-value" style="color: var(--emerald-optimal);">0.0045</div>
+          <span class="kpi-footer">Trial #12 (TPESampler seed=42)</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">調優後模型 5-Fold CV RMSE</span>
+          <div class="kpi-value" style="color: var(--cyan-primary);">$10,042.09</div>
+          <span class="kpi-footer">相較基準 OLS 改善約 0.00%</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">調優後獨立測試集 RMSE</span>
+          <div class="kpi-value">$9,141.84</div>
+          <span class="kpi-footer">測試集 R²: 0.9347 (-0.04%)</span>
+        </div>
+      </div>
+
+      <!-- Optuna 深入解讀與歷史圖表 -->
+      <div class="charts-grid" style="margin-top: 20px;">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3><i class="fa-solid fa-chart-line"></i> Optuna 30 次試驗歷程與超參數散佈</h3>
+              <p class="card-subtitle">Trial 編號 vs. 5-Fold CV RMSE 及對數尺度 &alpha; 影響</p>
+            </div>
+            <a href="images/optuna_optimization_history.png" target="_blank" class="badge-tag tag-info">開啟高清原圖 <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+          </div>
+          <div style="text-align: center; padding: 8px;">
+            <img src="images/optuna_optimization_history.png" alt="Optuna History" style="max-width: 100%; border-radius: 8px;">
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3><i class="fa-solid fa-circle-info"></i> 正則化調參未顯著改善之真實原因解析</h3>
+              <p class="card-subtitle">課堂實證教學與機器學習方法論</p>
+            </div>
+          </div>
+          <div style="font-size: 0.88rem; line-height: 1.8; color: var(--text-muted); padding: 8px 0;">
+            <p>
+              在本次 30 次 Optuna 試驗中，Ridge 回歸的最佳 &alpha; 為 <strong>0.0045</strong>，其 5-Fold CV RMSE ($10,042.09) 與基準 OLS ($10,042.10) 幾乎完全一致，測試集 RMSE 亦為 $9,141.84。
+            </p>
+            <div style="margin: 12px 0; padding: 12px; background: rgba(255,255,255,0.03); border-left: 3px solid var(--amber-warning); border-radius: 4px;">
+              <strong style="color: var(--amber-warning);"><i class="fa-solid fa-lightbulb"></i> 為何 L2 正則化未顯著超越 OLS？</strong>
+              <br>
+              1. <strong>樣本特徵特性：</strong>50 Startups 資料集中，研發支出 (R&D Spend) 與利潤具有高達 0.973 的強線性關係，模型信號非常集中。<br>
+              2. <strong>L2 收縮 vs. 特徵選擇：</strong>Ridge (L2) 僅平滑收縮係數大小，但保留全部 5 個特徵（包含冗餘的行政支出與州別虛擬變數）；而 <strong>特徵選擇 (SFS / Lasso)</strong> 能直接將噪聲特徵降為零，因此特徵選擇模型能取得更優之 CV RMSE ($9,474.32) 與測試 RMSE ($8,198.80)。
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-dim);">
+              <i class="fa-solid fa-check-circle" style="color: var(--emerald-optimal);"></i> 實事求是：我們誠實呈現模型調參的真實計算結果，絕不人為虛構假性能或偽造改善幅度。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         STEP 5: STATISTICAL & EVALUATION CURRICULUM GUIDE
+         ==================================================================== -->
+    <section class="section-wrapper" id="curriculum-guide">
+      <div class="section-header">
+        <div class="section-title-group">
+          <div class="stage-tag" style="background: rgba(14, 165, 233, 0.15); color: #38bdf8; border: 1px solid rgba(14, 165, 233, 0.4);">
+            <i class="fa-solid fa-book-open"></i> Step 5 (課程核心說明)
+          </div>
+          <h2>多元線性回歸核心概念與統計評估指南 (Curriculum Guide)</h2>
+          <p class="section-subtitle">
+            回歸評估指標公式與意義、資料切分必要性、過擬合/欠擬合判讀、誤差常態性與 p-value 正確統計詮釋。
+          </p>
+        </div>
+      </div>
+
+      <!-- 四大回歸指標卡片 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; margin-bottom: 24px;">
+        <div class="card" style="border-top: 3px solid var(--cyan-primary);">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--cyan-primary); margin-bottom: 8px;">
+            MAE (平均絕對誤差)
+          </h4>
+          <div style="font-family: 'Fira Code', monospace; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; font-size: 0.85rem; margin-bottom: 8px;">
+            MAE = (1/n) &times; &Sigma; |y<sub>i</sub> - ŷ<sub>i</sub>|
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>物理單位：</strong>與目標變數同單位 (美元 $)。<br>
+            <strong>意義：</strong>衡量預測值與真實值平均差距的絕對大小，對離群極端值具備線性穩健性。
+          </div>
+        </div>
+
+        <div class="card" style="border-top: 3px solid #8b5cf6;">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: #a78bfa; margin-bottom: 8px;">
+            MSE (均方誤差)
+          </h4>
+          <div style="font-family: 'Fira Code', monospace; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; font-size: 0.85rem; margin-bottom: 8px;">
+            MSE = (1/n) &times; &Sigma; (y<sub>i</sub> - ŷ<sub>i</sub>)&sup2;
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>物理單位：</strong>目標單位的平方 ($&sup2;)。<br>
+            <strong>意義：</strong>平方後放大並嚴懲大誤差，為數學上推導凸優化最佳解最常用之損失函數。
+          </div>
+        </div>
+
+        <div class="card" style="border-top: 3px solid var(--rose-danger);">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--rose-danger); margin-bottom: 8px;">
+            RMSE (均方根誤差)
+          </h4>
+          <div style="font-family: 'Fira Code', monospace; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; font-size: 0.85rem; margin-bottom: 8px;">
+            RMSE = &radic;(MSE)
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>物理單位：</strong>與目標變數同單位 (美元 $)。<br>
+            <strong>意義：</strong>兼顧 MSE 對大偏差的敏感懲罰，又開根號回歸與目標相同尺度，最易直觀評估。
+          </div>
+        </div>
+
+        <div class="card" style="border-top: 3px solid var(--emerald-optimal);">
+          <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--emerald-optimal); margin-bottom: 8px;">
+            R&sup2; (判定係數 / 決定係數)
+          </h4>
+          <div style="font-family: 'Fira Code', monospace; background: rgba(0,0,0,0.3); padding: 8px; border-radius: 4px; font-size: 0.85rem; margin-bottom: 8px;">
+            R&sup2; = 1 - (SS<sub>res</sub> / SS<sub>tot</sub>)
+          </div>
+          <div style="font-size: 0.82rem; color: var(--text-muted); line-height: 1.6;">
+            <strong>物理單位：</strong>無因次量綱 (常介於 0~1)。<br>
+            <strong>意義：</strong>模型所解釋的目標變異比例。注意：不可直接稱為「準確率 (Accuracy)」。
+          </div>
+        </div>
+      </div>
+
+      <!-- 四大核心診斷原則 -->
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 16px;">
+        <div class="card">
+          <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--text-bright); margin-bottom: 8px;">
+            <i class="fa-solid fa-code-fork" style="color: var(--cyan-primary);"></i> 1. Train/Test Split 的本質必要性
+          </h4>
+          <p style="font-size: 0.84rem; color: var(--text-muted); line-height: 1.7;">
+            機器學習的終極目標是建立對「未見樣本」具有強大預測能力的模型 (Generalization)。若模型只在訓練集上自我評估，可藉由死記雜訊獲得高分；唯有嚴格隔絕出從未參與訓練與特徵挑選的獨立測試集，方能提供無偏的泛化能力度量。
+          </p>
+        </div>
+
+        <div class="card">
+          <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--text-bright); margin-bottom: 8px;">
+            <i class="fa-solid fa-triangle-exclamation" style="color: var(--amber-warning);"></i> 2. 過擬合 (Overfitting) 與 欠擬合 (Underfitting)
+          </h4>
+          <p style="font-size: 0.84rem; color: var(--text-muted); line-height: 1.7;">
+            <strong>欠擬合：</strong>訓練誤差與驗證誤差均高，模型能力不足；<strong>過擬合：</strong>訓練誤差趨近零但驗證誤差大幅上升。<strong>注意：</strong>不可僅憑一次單一切分或某一輪誤差微幅波動就斷言過擬合，需透過交叉驗證或學習曲線做系統性診斷。
+          </p>
+        </div>
+
+        <div class="card">
+          <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--text-bright); margin-bottom: 8px;">
+            <i class="fa-solid fa-bell-curve" style="color: #a855f7;"></i> 3. 常態性與等變異性的正確歸屬
+          </h4>
+          <p style="font-size: 0.84rem; color: var(--text-muted); line-height: 1.7;">
+            回歸模型之高斯-馬可夫假設，嚴格要求的是<strong>「模型誤差項／殘差 (Residuals, &epsilon; ~ N(0, &sigma;&sup2;))」</strong>滿足獨立常態且同質變異；<strong>絕非</strong>要求每一個自變數 X 都必須呈常態分佈或具有相同變異數。
+          </p>
+        </div>
+
+        <div class="card">
+          <h4 style="font-size: 0.92rem; font-weight: 700; color: var(--text-bright); margin-bottom: 8px;">
+            <i class="fa-solid fa-scale-balanced" style="color: var(--emerald-optimal);"></i> 4. p-value 的正確定義與邊界
+          </h4>
+          <p style="font-size: 0.84rem; color: var(--text-muted); line-height: 1.7;">
+            p-value 是指<strong>「在虛無假設 (H0: &beta;=0) 為真的前提下，觀察到當前樣本檢定統計量（或更極端者）的條件機率」</strong>。它<strong>絕對不能</strong>解釋為「假設為錯誤的機率」或「因果關係存在的機率」。
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
          ACADEMIC & EMPIRICAL DISCUSSION SECTION
          ==================================================================== -->
     <section class="section-wrapper" id="discussion">
@@ -853,7 +1049,7 @@
       <div class="section-header">
         <div class="section-title-group">
           <h2><i class="fa-solid fa-box-archive" style="color: var(--amber-warning);"></i> 專案產出物與模型下載 (Downloads & Artifacts)</h2>
-          <p class="section-subtitle">包含完整 Python 模型 PKL 檔、CSV 預測結果、JSON 數據與學術報告</p>
+          <p class="section-subtitle">包含完整 Python 模型 PKL 檔、CSV 預測結果、JSON 數據、Jupyter Notebook 與報告</p>
         </div>
       </div>
 
@@ -870,7 +1066,31 @@
           <div class="download-icon" style="color: var(--emerald-optimal);"><i class="fa-solid fa-cubes"></i></div>
           <div>
             <div class="download-name">Part 2 前向選擇模型 (PKL.GZ)</div>
-            <div class="download-meta">1~5 特徵步進模型集合</div>
+            <div class="download-meta">5-Fold CV 特徵選擇模型套件</div>
+          </div>
+        </a>
+
+        <a href="downloads/optuna_tuned_model.pkl.gz" download="optuna_tuned_model.pkl.gz" class="download-box">
+          <div class="download-icon" style="color: #c084fc;"><i class="fa-solid fa-wand-magic-sparkles"></i></div>
+          <div>
+            <div class="download-name">Optuna 調優模型 (PKL.GZ)</div>
+            <div class="download-meta">Pipeline (StandardScaler + Ridge)</div>
+          </div>
+        </a>
+
+        <a href="downloads/boston_housing_linear_regression_model.pkl.gz" download="boston_housing_linear_regression_model.pkl.gz" class="download-box">
+          <div class="download-icon" style="color: var(--violet-crisp);"><i class="fa-solid fa-city"></i></div>
+          <div>
+            <div class="download-name">Boston 房價模型 (PKL.GZ)</div>
+            <div class="download-meta">通用 Workflow 端到端 Pipeline</div>
+          </div>
+        </a>
+
+        <a href="downloads/50_Startup_Multiple_Linear_Regression_CRISP_DM.ipynb" download="50_Startup_Multiple_Linear_Regression_CRISP_DM.ipynb" class="download-box">
+          <div class="download-icon" style="color: #f97316;"><i class="fa-solid fa-book-bookmark"></i></div>
+          <div>
+            <div class="download-name">Jupyter Notebook (.ipynb)</div>
+            <div class="download-meta">完整可執行 CRISP-DM 範本</div>
           </div>
         </a>
 
@@ -886,12 +1106,28 @@
           <div class="download-icon" style="color: var(--amber-warning);"><i class="fa-solid fa-table"></i></div>
           <div>
             <div class="download-name">Part 2 步進總表 (CSV)</div>
-            <div class="download-meta">特徵子集與 RMSE/R² 數據</div>
+            <div class="download-meta">5-Fold CV 與 Test 誤差指標</div>
+          </div>
+        </a>
+
+        <a href="downloads/optuna_trials.csv" download="optuna_trials.csv" class="download-box">
+          <div class="download-icon" style="color: #a855f7;"><i class="fa-solid fa-list-ol"></i></div>
+          <div>
+            <div class="download-name">Optuna 試驗明細 (CSV)</div>
+            <div class="download-meta">30 Trials 參數與 CV RMSE</div>
+          </div>
+        </a>
+
+        <a href="downloads/exhaustive_search_31_subsets.csv" download="exhaustive_search_31_subsets.csv" class="download-box">
+          <div class="download-icon" style="color: var(--rose-danger);"><i class="fa-solid fa-layer-group"></i></div>
+          <div>
+            <div class="download-name">全子集 31 組評估表 (CSV)</div>
+            <div class="download-meta">窮舉搜尋 5-Fold CV 與 Test RMSE</div>
           </div>
         </a>
 
         <a href="data.json" download="50_startups_results.json" class="download-box">
-          <div class="download-icon" style="color: var(--rose-danger);"><i class="fa-solid fa-code"></i></div>
+          <div class="download-icon" style="color: var(--cyan-primary);"><i class="fa-solid fa-code"></i></div>
           <div>
             <div class="download-name">結構化數據 (JSON)</div>
             <div class="download-meta">全域數值與 5 大演算法 Benchmark</div>

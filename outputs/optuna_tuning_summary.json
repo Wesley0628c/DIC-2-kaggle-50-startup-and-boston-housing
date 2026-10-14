@@ -1,0 +1,40 @@
+{
+  "model_type": "Pipeline(StandardScaler + Ridge)",
+  "pipeline": "Pipeline(steps=[('preprocessor',\n                 ColumnTransformer(transformers=[('num',\n                                                  Pipeline(steps=[('imputer',\n                                                                   SimpleImputer(strategy='median')),\n                                                                  ('scaler',\n                                                                   StandardScaler())]),\n                                                  ['R&D Spend',\n                                                   'Administration',\n                                                   'Marketing Spend']),\n                                                 ('cat',\n                                                  OneHotEncoder(drop='first',\n                                                                handle_unknown='ignore',\n                                                                sparse_output=False),\n                                                  ['State'])])),\n                ('regressor',\n                 Ridge(alpha=0.18784949239433849, random_state=42))])",
+  "feature_names": [
+    "R&D Spend",
+    "Administration",
+    "Marketing Spend",
+    "State_Florida",
+    "State_New York"
+  ],
+  "best_alpha": 0.18784949239433849,
+  "best_trial_number": 22,
+  "baseline_metrics": {
+    "cv_rmse": 10042.095066712931,
+    "cv_std": 2850.483887882537,
+    "test_rmse": 9137.990152794944,
+    "test_r2": 0.9347068473282425,
+    "test_mae": 7514.2936596406025
+  },
+  "tuned_metrics": {
+    "cv_rmse": 10034.578142541317,
+    "cv_std": 2884.0709670603615,
+    "test_rmse": 9294.32356617669,
+    "test_r2": 0.9324536567247735,
+    "test_mae": 7594.534664053295
+  },
+  "cv_improvement_pct": 0.07485414270305693,
+  "test_improvement_pct": -1.7108074179083026,
+  "model": "Ridge(alpha=0.18784949239433849, random_state=42)",
+  "preprocessor": "ColumnTransformer(transformers=[('num',\n                                 Pipeline(steps=[('imputer',\n                                                  SimpleImputer(strategy='median')),\n                                                 ('scaler', StandardScaler())]),\n                                 ['R&D Spend', 'Administration',\n                                  'Marketing Spend']),\n                                ('cat',\n                                 OneHotEncoder(drop='first',\n                                               handle_unknown='ignore',\n                                               sparse_output=False),\n                                 ['State'])])",
+  "column_transformer": "ColumnTransformer(transformers=[('num',\n                                 Pipeline(steps=[('imputer',\n                                                  SimpleImputer(strategy='median')),\n                                                 ('scaler', StandardScaler())]),\n                                 ['R&D Spend', 'Administration',\n                                  'Marketing Spend']),\n                                ('cat',\n                                 OneHotEncoder(drop='first',\n                                               handle_unknown='ignore',\n                                               sparse_output=False),\n                                 ['State'])])",
+  "coefficients": {
+    "R&D Spend": 35328.54352017618,
+    "Administration": 963.08344270305,
+    "Marketing Spend": 4777.058676305769,
+    "State_Florida": -985.163885226428,
+    "State_New York": 799.8571932875885
+  },
+  "intercept": 109412.78820365595
+}

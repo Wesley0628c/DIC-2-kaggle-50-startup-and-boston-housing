@@ -243,12 +243,63 @@
 
 ---
 
-### Step 24：端到端 Pipeline 完整同步與 GitHub Pages 部署就緒
-- **執行時間**：2026-10-14 20:12
-- **執行指令**：`python3 src/pipeline.py`
-- **主要結果**：
-  - 重新執行 6 大 Stage，將所有成果完整同步至 `outputs/`、`web/`、`web/downloads/`、`docs/` 與專案根目錄。
-  - 確保三處皆包含 `.nojekyll`。
-  - GitHub Pages 部署 Actions 檔案 `.github/workflows/deploy-pages.yml` 已配置完成。
+---
+
+### Step 25：全面落實多元線性回歸課程要求重構與防洩漏實作 (Step 1 ~ Step 9)
+- **執行時間**：2026-10-14 21:20 ~ 21:40
+- **工作分支**：`feature/ml-regression-refactor` (獨立分支，不合併 main 亦不觸發正式部署)
+- **修改模組與主要實作內容**：
+  1. **Step 1 (資料切分與防洩漏前處理)**：
+     - 修改 `src/part1_crispdm.py`：嚴格依照「原始資料 $\rightarrow$ 目標值無效檢測 $\rightarrow$ 80/20 切分 $\rightarrow$ 從訓練集 fit 前處理 $\rightarrow$ 訓練模型 $\rightarrow$ 評估」順序。
+     - 使用 `Pipeline([('preprocessor', ColumnTransformer(...)), ('regressor', LinearRegression())])`。
+     - 數值欄位由 `SimpleImputer(strategy='median')` 填補（中位數嚴格僅從訓練集 40 筆學習）；類別欄位由 `OneHotEncoder(drop='first', handle_unknown='ignore')` 編碼，以 California 為基準，避免 Dummy Variable Trap。
+     - 序列化完整 Pipeline 至 `outputs/part1_linear_regression_model.pkl.gz`，直接以原始 DataFrame（含文字 State）測試重載推論，最大差異為 0.00e+00。測試集出現新類別 "Texas" 自動編碼為 0 不崩潰。
+  2. **Step 2 (前向特徵選擇改採 5-Fold 交叉驗證)**：
+     - 修改 `src/part2_forward_selection.py` 與 `src/benchmark_algorithms.py`：徹底禁止以測試集 RMSE 挑選特徵或演算法。
+     - 於訓練集 40 筆內使用固定 5-Fold CV (`KFold(n_splits=5, shuffle=True, random_state=42)`)，每輪以平均 validation RMSE 選拔特徵。
+     - 實測每輪勝出：$k=1$ R&D Spend (CV: 9625.47), $k=2$ Marketing Spend (CV: **9474.32 全域最低**), $k=3$ State_New York (CV: 9602.03), $k=4$ State_Florida (CV: 9779.97), $k=5$ Administration (CV: 10042.10)。
+     - 最佳 $k=2$ 由 CV 最低點真實判定；在完整訓練集重新擬合後，獨立測試集 Test RMSE 達 **$8198.80** ($R^2 = 0.9474$)。
+     - 歷史以 Test RMSE 挑選特徵之結果歸檔至 `part2_historical_test_sfs_summary.csv` 並標示樂觀偏差與資料洩漏警示。
+  3. **Step 3 (自訂 CSV 回歸引擎 regression_engine.js 強化)**：
+     - 修改 `web/regression_engine.js`：實作 `isMissing` 函式，嚴格區分空白字串 `""`、空白字元與合法數值 `0`，禁止 `Number("")` 將空值誤判為 0。
+     - 偶數筆數值中位數計算嚴格取中央兩值平均。
+     - 實作「先切分後前處理」機制，僅以訓練集有效數值計算中位數並套用於測試集。
+     - 類別欄位採用第 1 個類別為基準類別，測試集出現未見類別自動填補為全 0，杜絕崩潰。
+     - 增加切分後訓練樣本數與特徵數自由度檢查 ($N_{\text{train}} \le P + 1$)，拒絕假正常。
+  4. **Step 4 (Optuna 30 Trials 超參數調校模組)**：
+     - 新建 `src/optuna_tuner.py`：以訓練集 5-Fold CV RMSE 為 objective，將 `ColumnTransformer` (含 `StandardScaler`) 與 `Ridge` 包裝在同一 Pipeline 內，杜絕 fold 間資料洩漏。
+     - 以對數刻度搜尋 $\alpha \in [10^{-4}, 10^{4}]$，固定 `TPESampler(seed=42)` 執行 30 trials。
+     - 最佳 Trial #22 ($\alpha = 0.1878$)，CV RMSE 由基準之 10042.10 改善至 **10034.58** (+0.07%)。
+     - 輸出 `optuna_trials.csv`, `optuna_trials.json`, `optuna_optimization_history.png`, `optuna_tuned_model.pkl.gz`。
+     - 誠實檢討：L2 微縮保留不顯著特徵，獨立測試集表現 (RMSE 9294.32) 遠遜於稀疏特徵選擇 $k=2$ (RMSE 8198.80)。
+  5. **Step 5 (圖表與課程統計觀念補正)**：
+     - 產出固定種子隨機教學示範圖 `outputs/part1_synthetic_demo_scatter.png`（與真實資料明確隔離）。
+     - 產出真實散點圖 `outputs/real_data_scatters.png`、`outputs/actual_vs_predicted.png`、`outputs/residuals_plot.png`。
+     - 繪製 5-Fold CV RMSE 趨勢圖 `outputs/part2_features_trend.png` 與學習曲線 `outputs/learning_curve.png`。
+     - 於網頁與 Notebook 補正白話統計概念：MAE/MSE/RMSE 意義與單位、Train/Test 必要性、過擬合判定、殘差常態性與等變異性假設、p-value 正確意義。
+  6. **Step 6 (網站數據與文字全面一致性修正)**：
+     - 修改 `web/index.html`、`web/app.js`、`web/data.json`、`web/default_data.js`：
+     - Boston Housing 公式更新為真實模型輸出：$\text{medv} = 38.0917 - 0.1194(\text{crim}) + 0.0448(\text{zn}) + \dots + 3.7087(\text{rm}) - 16.1236(\text{nox}) + 2.3408(\text{chas}) - 0.4928(\text{lstat})$。
+     - 特徵選擇按鈕與標籤依實際 CV 順序動態生成 (`renderKStepperButtons`)。
+     - 標示 Training、5-Fold CV、Test 各自指標；未計算顯示「未計算」。
+  7. **Step 7 (可重用工作流與部署一致性)**：
+     - 更新 `src/regression_workflow.py`，Boston Housing ($n=506$) 實測 5-Fold CV RMSE 4.7044，Test RMSE 5.7835 ($R^2 = 0.5892$)。
+     - 儲存 `boston_housing_linear_regression_model.pkl.gz`，重載推論差異 0.00e+00。
+     - 補充線上監控規劃（缺失率、未知類別率、真實標籤回饋），明確區分現況與未來計畫。
+  8. **Step 8 (Jupyter Notebook 與報告同步)**：
+     - 更新 `scripts/generate_notebook.py`，完整涵蓋 CRISP-DM 六階段、5-Fold CV SFS、Optuna 調校、通用工作流與模型重載。
+     - 使用 Python 3.11 核心成功執行 Notebook，真實 Outputs 與圖表已完整寫入 `50_Startup_Multiple_Linear_Regression_CRISP_DM.ipynb` 並同步至下載目錄。
+     - 更新 `README.md`, `results.md`, `ToDo.md`。
+  9. **Step 9 (測試驗證)**：
+     - 更新 `tests/test_pipeline.py` 與 `tests/test_web_integration.py`。
+     - 執行 `python3 -m pytest -v tests/`：**19 項測試全數通過 (100% PASSED)**！
+- **輸出檔案**：
+  - `src/part1_crispdm.py`, `src/part2_forward_selection.py`, `src/benchmark_algorithms.py`, `src/optuna_tuner.py`, `src/regression_workflow.py`, `src/export_web_data.py`, `src/pipeline.py`
+  - `web/regression_engine.js`, `web/app.js`, `web/index.html`, `web/data.json`, `web/default_data.js`
+  - `50_Startup_Multiple_Linear_Regression_CRISP_DM.ipynb`, `README.md`, `results.md`, `ToDo.md`, `RunLog.md`
 - **驗證狀態**：成功 (Passed)
+- **尚未解決之限制**：
+  1. 靜態 GitHub Pages 站點無法在伺服器端動態執行 Python 腳本，前端分析依賴純 JavaScript 線性回歸求解器 (`regression_engine.js`)；因 JS 與 Python 底層浮點數及亂數生成器差異，相同 random seed 不保證完全相同切分，介面上已明確標註說明。
+  2. 正式環境尚未部署生產即時監控服務（如 Prometheus / Evidently AI），目前僅提供靜態檢查邏輯與監控規劃設計。
+
 

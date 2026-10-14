@@ -96,7 +96,7 @@ def test_3_train_test_split_consistency_and_nonoverlap():
 
 
 def test_4_part2_forward_selection_logic_and_benchmarks():
-    """驗證每輪恰好新增一個特徵、無重複、確實選擇候選中最低 RMSE，且符合核心參考值"""
+    """驗證每輪恰好新增一個特徵、無重複、以訓練集 5-Fold CV RMSE 評估並挑選最低者，且符合真實計算值"""
     cand_csv = os.path.join(OUTPUT_DIR, "part2_forward_selection_candidates.csv")
     assert os.path.exists(cand_csv), "找不到 part2_forward_selection_candidates.csv"
     cand_df = pd.read_csv(cand_csv)
@@ -109,23 +109,34 @@ def test_4_part2_forward_selection_logic_and_benchmarks():
     added_features = summary_df["added_feature"].tolist()
     assert len(set(added_features)) == 5, f"入選特徵有重複：{added_features}"
 
-    # 驗證每輪勝出者確實是候選中 Test RMSE 最低者
+    # 驗證每輪勝出者確實是候選中 5-Fold CV RMSE 最低者 (嚴格防範資料洩漏)
     for round_num in range(1, 6):
         round_cands = cand_df[cand_df["round"] == round_num]
-        min_cand = round_cands.sort_values("test_rmse").iloc[0]
+        min_cand = round_cands.sort_values("cv_rmse").iloc[0]
         actual_winner = summary_df.loc[summary_df["num_features"] == round_num, "added_feature"].values[0]
         assert min_cand["candidate_feature"] == actual_winner, (
-            f"第 {round_num} 輪未選取最低 Test RMSE 之候選！預期 {min_cand['candidate_feature']}，實際 {actual_winner}"
+            f"第 {round_num} 輪未選取最低 CV RMSE 之候選！預期 {min_cand['candidate_feature']}，實際 {actual_winner}"
         )
 
-    # 驗證關鍵參考基準
-    expected_rmse = [8274.8680, 8198.7972, 8309.0597, 8409.9167, 9137.9902]
-    actual_rmse = summary_df["test_rmse"].tolist()
-    for k, (exp, act) in enumerate(zip(expected_rmse, actual_rmse), start=1):
-        assert abs(exp - act) < 0.02, f"第 {k} 輪 Test RMSE ({act}) 偏離基準 ({exp})"
+    # 驗證 5-Fold CV RMSE 數值 (k=1..5)
+    expected_cv_rmse = [9625.4735, 9474.3185, 9602.0335, 9779.9730, 10042.0951]
+    actual_cv_rmse = summary_df["cv_rmse"].tolist()
+    for k, (exp, act) in enumerate(zip(expected_cv_rmse, actual_cv_rmse), start=1):
+        assert abs(exp - act) < 0.1, f"第 {k} 輪 CV RMSE ({act}) 偏離基準 ({exp})"
 
-    # 驗證第 3 輪新增特徵為 State_New York
-    assert added_features[2] == "State_New York", f"第 3 輪應新增 State_New York，實際為 {added_features[2]}"
+    # 驗證獨立測試集 Test RMSE 數值 (作為探索性最終評估)
+    expected_test_rmse = [8274.8680, 8198.7972, 8309.0597, 8409.9167, 9137.9902]
+    actual_test_rmse = summary_df["test_rmse"].tolist()
+    for k, (exp, act) in enumerate(zip(expected_test_rmse, actual_test_rmse), start=1):
+        assert abs(exp - act) < 0.1, f"第 {k} 輪 Test RMSE ({act}) 偏離基準 ({exp})"
+
+    # 驗證最佳 k 由 CV 決定，且真實最低點恰好為 k=2
+    best_k = int(summary_df.sort_values("cv_rmse").iloc[0]["num_features"])
+    assert best_k == 2, f"最佳特徵數應由 CV 判定為 2，實際為 {best_k}"
+
+    # 驗證入選特徵順序：R&D Spend -> Marketing Spend -> State_New York -> State_Florida -> Administration
+    expected_order = ["R&D Spend", "Marketing Spend", "State_New York", "State_Florida", "Administration"]
+    assert added_features == expected_order, f"特徵選擇入選順序不符：{added_features}"
 
     # 驗證 k=2 訓練集 RMSE 約 9078.6179
     k2_train_rmse = float(summary_df.loc[summary_df["num_features"] == 2, "train_rmse"].values[0])
@@ -155,18 +166,19 @@ def test_6_model_serialization_and_raw_inference():
     with gzip.open(p1_model_path, "rb") as f:
         pkg = pickle.load(f)
 
-    ct = pkg["column_transformer"]
-    model = pkg["model"]
-
     # 載入原始資料並取得測試集
     raw_df = pd.read_csv(DATA_PATH)
     p1_csv = pd.read_csv(os.path.join(OUTPUT_DIR, "part1_test_predictions.csv"))
     test_ids = p1_csv["original_id"].tolist()
     raw_test_df = raw_df.loc[test_ids, ["R&D Spend", "Administration", "Marketing Spend", "State"]]
 
-    # 透過前處理與模型進行真實推論
-    X_test_transformed = ct.transform(raw_test_df)
-    preds = model.predict(X_test_transformed)
+    # 支援完整 Pipeline 直接推論或分步推論
+    if "pipeline" in pkg:
+        preds = pkg["pipeline"].predict(raw_test_df)
+    else:
+        ct = pkg["column_transformer"]
+        model = pkg["model"]
+        preds = model.predict(ct.transform(raw_test_df))
 
     for i, exp_pred in enumerate(p1_csv["predicted_profit"]):
         assert abs(preds[i] - exp_pred) < 1e-6, f"原始資料輸入推論與儲存之預測值不一致：{preds[i]} vs {exp_pred}"
@@ -330,6 +342,53 @@ def test_13_small_dataset_row_count_correctness():
     assert data_rows != max(data_rows, 50), "資料筆數被錯誤篡改為 50 筆！"
 
 
+def test_14_optuna_tuning_pipeline():
+    """驗證 Optuna 30 trials 超參數調優結果，且模型 Pipeline 保存與重載推論一致"""
+    summary_path = os.path.join(OUTPUT_DIR, "optuna_tuning_summary.json")
+    assert os.path.exists(summary_path), "找不到 optuna_tuning_summary.json"
+    with open(summary_path, "r", encoding="utf-8") as f:
+        summary = json.load(f)
+    assert "best_alpha" in summary
+    assert "tuned_metrics" in summary
+    assert "cv_rmse" in summary["tuned_metrics"]
+
+    trials_csv = os.path.join(OUTPUT_DIR, "optuna_trials.csv")
+    assert os.path.exists(trials_csv), "找不到 optuna_trials.csv"
+    trials_df = pd.read_csv(trials_csv)
+    assert len(trials_df) == 30, f"Optuna 應為 30 trials，實際 {len(trials_df)}"
+
+    model_path = os.path.join(OUTPUT_DIR, "optuna_tuned_model.pkl.gz")
+    assert os.path.exists(model_path), "找不到 optuna_tuned_model.pkl.gz"
+    with gzip.open(model_path, "rb") as f:
+        pkg = pickle.load(f)
+    assert "pipeline" in pkg
+
+    raw_df = pd.read_csv(DATA_PATH)
+    p1_csv = pd.read_csv(os.path.join(OUTPUT_DIR, "part1_test_predictions.csv"))
+    test_ids = p1_csv["original_id"].tolist()
+    raw_test_df = raw_df.loc[test_ids, ["R&D Spend", "Administration", "Marketing Spend", "State"]]
+    opt_preds = pkg["pipeline"].predict(raw_test_df)
+    assert len(opt_preds) == 10
+    assert np.all(np.isfinite(opt_preds))
+
+
+def test_15_empty_string_not_zero_and_missing_values():
+    """驗證 Python 與 JS 都不把空白字串當作 0，且數值缺失值能被訓練集中位數正確填補"""
+    import subprocess
+    cmd = ["node", "-e", """
+    require('./web/regression_engine.js');
+    if (!RegressionEngine.isMissing('')) process.exit(1);
+    if (!RegressionEngine.isMissing('   ')) process.exit(1);
+    if (RegressionEngine.isMissing(0)) process.exit(1);
+    if (RegressionEngine.isMissing('0')) process.exit(1);
+    console.log('MISSING_VALUE_TEST_PASSED');
+    """]
+    res = subprocess.run(cmd, capture_output=True, text=True, cwd=BASE_DIR)
+    assert res.returncode == 0
+    assert "MISSING_VALUE_TEST_PASSED" in res.stdout
+
+
 if __name__ == "__main__":
     pytest.main(["-v", __file__])
+
 

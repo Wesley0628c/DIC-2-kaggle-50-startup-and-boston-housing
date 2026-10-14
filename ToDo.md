@@ -1,71 +1,73 @@
-# 50 Startups & Boston Housing 多元回歸作業修正與完整驗收進度清單
+# 多元線性回歸課程要求重構與防洩漏完整驗收清單 (ToDo.md)
 
-本清單依使用者指示建立 12 大改善檢核步驟，追蹤「兩題定義核對」、「自訂 Dataset 真實回歸引擎」、「可重用 Workflow」、「Boston Housing 實證」以及各項數值一致性與網頁互動之驗證狀態。每一步驟嚴格遵循「只有在執行並驗證成功後才能打勾」之原則。
+本清單依據多元線性回歸課程嚴格規範與最新需求建立，專注於徹底解決「測試集資料洩漏」、「特徵選擇誤用測試集」、「缺失值處理盲區（空字串誤判為 0）」以及「網站數據與說明一致性」等核心問題。每一步驟嚴格遵循「只有在執行並驗證成功後才能打勾」之原則。
 
 ---
 
-## 改善檢核清單 (Step 01 ~ Step 12)
+## 執行分支宣告
+- **當前工作分支**：`feature/ml-regression-refactor`
+- **原則**：在獨立分支完成所有修改與測試；未另行授權前，不合併 main 亦不觸發正式網站部署。
 
-- [x] **Step 01：核對最新版程式及兩題定義**
-  - 核對最新 git commit `41ba290`、專案規範與歷史檔案。
-  - 核對「兩題 (Two Problems)」的定義範圍：
-    - 解讀 A：Topic 1 (50 Startups) 與 Topic 2 (Boston Housing) 各為一題，倉庫名稱 `DIC-2-kaggle-50-startup-and-boston-housing` 亦明確指向兩大資料集。
-    - 解讀 B：50 Startups 內之 Part 1 CRISP-DM Baseline 與 Part 2 Forward Feature Selection。
-    - **執行策略**：全面實作兩套主題（50 Startups + Boston Housing），並保留 50 Startups 內部的 Part 1 與 Part 2，於下拉選單中完整提供五種視角 (`part1`, `part2`, `boston`, `custom`, `all`)，徹底滿足任何一種評分標準。
+---
 
-- [x] **Step 02：移除 Dataset 假成功、固定指標及錯誤筆數**
-  - 徹底刪除 `web/app.js` 中 `Math.max(lines.length - 1, 50)`、寫死的 `0.9347`、$9137.99 與寫死公式。
-  - 刪除 `catch` 區塊中的「假成功」回退文字與虛假 50 筆輸出。
-  - 建立明確的狀態機：`未載入 (idle)` $\rightarrow$ `載入中 (loading)` $\rightarrow$ `資料待設定 (ready_to_config)` $\rightarrow$ `訓練中 (training)` $\rightarrow$ `完成 (success) / 失敗 (error)`。
-  - 實測驗證：`tests/test_web_integration.py::test_no_synthetic_or_fake_success_in_app_js` 100% 通過。
+## 核心任務清單 (Step 1 ~ Step 9)
 
-- [x] **Step 03：完成 CSV 網址載入與本機上傳**
-  - 支援遠端公開 CSV 網址 fetch（處理 CORS 限制並提供明確使用者導引）。
-  - 支援本機 CSV 檔案上傳（使用 FileReader API 進行本機無伺服器直接分析）。
-  - 實作完整符合 RFC 4180 標準的 CSV 解析器（支援雙引號轉義、欄位內逗號、跨行換行、UTF-8 BOM 清除）。
-  - 實測驗證：已成功解析 50 Startups、Boston Housing 以及 20 筆多欄位測試資料。
+- [x] **Step 1：修正資料切分與前處理**
+  - [x] 確定嚴格處理順序：原始資料 $\rightarrow$ 處理無效目標值（移除缺失/非數值目標列並記錄筆數，絕不填補 $y$） $\rightarrow$ 切分訓練集 (80%)／測試集 (20%)（固定 random_state） $\rightarrow$ 僅從訓練資料 fit 前處理轉換器 $\rightarrow$ 訓練模型 $\rightarrow$ 評估。
+  - [x] Python 端採用 `Pipeline` 與 `ColumnTransformer`，結合 `SimpleImputer(strategy='median')` 與 `OneHotEncoder(drop='first', handle_unknown='ignore')`。
+  - [x] 規避虛擬變數陷阱 (Dummy Variable Trap，保留 $n-1$ 欄)，同時對測試集/未知類別具備容錯能力不崩潰。
+  - [x] 在交叉驗證時，前處理必須在每個 training fold 內重新 fit，杜絕跨 fold 資料洩漏。
+  - [x] 驗收：測試資料的數值或類別改變，不得改變已學得的訓練集前處理參數。
 
-- [x] **Step 04：完成資料預覽、品質檢查及 X／y 選擇**
-  - 動態呈現資料表格前 5 筆預覽、真實總筆數、欄位清單。
-  - 自動偵測並顯示各欄位型別（數值型、類別型）與缺失值 (NaN / 空值) 數量。
-  - 提供目標變數 $y$ 下拉選單（需為數值型，若非數值標示不可為目標）。
-  - 提供特徵變數 $X$ 勾選清單，具備「全選 / 取消全選」按鈕，並限制 $y$ 不得被選為特徵。
+- [x] **Step 2：修正特徵選擇使用測試集的問題**
+  - [x] 檢查並重構 `src/part2_forward_selection.py`、`src/benchmark_algorithms.py` 及 Notebook。
+  - [x] **嚴格禁止使用最終測試集 RMSE 選擇特徵、特徵數 $k$、演算法或超參數**。
+  - [x] 於訓練集內採用固定且一致的 5-fold cross-validation，每輪前向選擇以平均 validation RMSE 作為挑選依據，並由 CV 決定最佳特徵數 $k$（實測 $k=2$，CV RMSE $9474.32$）。
+  - [x] Lasso、RFE、ElasticNet、全子集窮舉均遵守 CV fold 內特徵選擇原則。
+  - [x] 明確區分「Lasso 直接預測」與「Lasso 選特徵後以 OLS 重擬合」。
+  - [x] 特徵選擇與模型確定後，才在完整訓練集上重新 fit，並產生最終獨立測試集評估結果 ($8198.80$)。
+  - [x] 原「測試集 RMSE 選特徵」版本移至獨立之歷史教學示範區，明確標示樂觀偏差 (Optimistic Bias) 與資料洩漏限制。
 
-- [x] **Step 05：完成真實前處理、切分、訓練與評估**
-  - 在訓練集上建立前處理轉換：數值型中位數填補缺失值、類別型 One-Hot Encoding（保留基準類別以防共線性）。
-  - 實作資料切分（支援自訂 `test_size` 與 `random_state`，預設 0.2 與 0，使用 Mulberry32 確定性偽隨機生成器）。
-  - 實作可靠數值解法之多元線性回歸求解器（基於主元高斯消去法 + Ridge $\lambda=10^{-9}$ 正規化防護），防範奇異矩陣與多重共線性。
-  - 計算訓練集與測試集之真實指標：MAE、MSE、RMSE、$R^2$，指標由實測預測值計算，杜絕近似推算。
+- [x] **Step 3：修正自訂 CSV 引擎 (regression_engine.js)**
+  - [x] 嚴格區分空白字串 `""`、空白字元、`null`、`undefined`、`NaN` 與合法數值 `0`，禁止 `Number("")` 將空值誤判為 0。
+  - [x] 數值缺失值使用訓練集有效數值之中位數填補，偶數筆資料之中位數正確計算中間兩值之平均數。
+  - [x] 針對全缺失欄位、重複欄名、無有效特徵、樣本不足 ($n \le p+1$)、無效 `test_size` 提供精準錯誤訊息。
+  - [x] $R^2$ 或 Adjusted $R^2$ 不適用（如目標無變異）時顯示「不適用」，不得偽造為 0 或 1。
+  - [x] 匯出模型參數需包含特徵順序、類別對應、填補中位數、係數與截距。
+  - [x] 撰寫包含缺失值、異常值的單元測試 (`test_js_engine.js` 與 `test_web_integration.py` 案例 A~E 全數通過)。
 
-- [x] **Step 06：完成適用於 GitHub Pages 的運算與錯誤處理**
-  - 確保所有自訂回歸分析 100% 在瀏覽器端（Client-side）純 JavaScript 執行，不依賴任何外部後端或 localhost API。
-  - 針對非 CSV、空檔案、樣本數不足（$n \le p$）、目標變數無變異、文字目標無法回歸、CORS 阻擋等情況，提供具體友善的錯誤診斷與處置建議。
-  - 實測案例 D（無效網址）與案例 E（樣本數過少）均正確顯示錯誤，不產生假成功。
+- [x] **Step 4：補上 Optuna 優化超參數**
+  - [x] 保留 LinearRegression 作為基準模型，加入 Optuna 超參數調優（Ridge 回歸）。
+  - [x] Optuna objective 採用訓練集內 5-fold CV RMSE，前處理與回歸模型包在同一個 Pipeline 內。
+  - [x] 以對數尺度 (log scale, $10^{-4} \sim 10^4$) 搜尋正則化強度 $\alpha$。
+  - [x] 固定 TPESampler seed (42)，執行 30 trials，記錄各 trial 軌跡、最佳參數 ($\alpha=0.1878$)、CV RMSE ($10034.58$) 及標準差。
+  - [x] 誠實呈現基準模型與調優模型之比對（L2 微縮在全特徵微幅改善 CV +0.07%，但獨立測試集退步 -1.71%，遠不如稀疏特徵選擇 $k=2$）。
 
-- [x] **Step 07：修正指標、圖表、公式與試算器同步**
-  - 求解後動態生成真實回歸方程式字串、各特徵回歸係數與截距。
-  - 動態使用 Chart.js 繪製真實的「Actual vs. Predicted 散佈圖」與「殘差圖 (Residuals Plot)」。
-  - 提供結果 CSV 與 JSON 下載功能（包含資料設定、模型係數、指標與逐筆測試集預測明細）。
-  - 試算器動態讀取模型導出之完整精度浮點係數，不再使用寫死四捨五入公式。
+- [x] **Step 5：補齊圖表與課程說明**
+  - [x] 產出固定種子隨機合成資料散佈圖（標註為教學示範：`part1_synthetic_demo_scatter.png`）。
+  - [x] 產出真實特徵與目標散佈圖 (`real_data_scatters.png`)、Actual vs. Predicted 散佈圖 (`actual_vs_predicted.png`)、殘差圖 (`residuals_plot.png`)。
+  - [x] 繪製特徵數對 Training RMSE / Cross-validation RMSE 變化曲線 (`part2_features_trend.png`)。
+  - [x] 繪製學習曲線 (Learning Curve)：訓練資料筆數對 Training / Validation RMSE (`learning_curve.png`)。
+  - [x] 補正課程統計概念白話說明：MAE/MSE/RMSE/R² 意義與單位、Train/Test 切分必要性、過擬合/欠擬合判讀、誤差/殘差常態性與等變異性假設、p-value 正確統計意義。
 
-- [x] **Step 08：修正最佳模型及統計結論**
-  - 保持 50 Startups 與 Boston Housing 的客觀結論：貪婪前向選擇之 $k=2$ 稱為「前向搜尋路徑最優」，全子集窮舉 $k=3$ 稱為「31 組全子集全域最低 RMSE (8171.65)」。
-  - 清楚區分特徵選擇重訓 OLS 與正則化直接預測之差異。
-  - 移除假造的統計檢定與顯著性宣稱，保留完整嚴謹的自由度與 p-value 數值。
+- [x] **Step 6：修正網站數據與文字一致性**
+  - [x] Boston Housing 之回歸公式、係數表、解釋文字讀取同一份模型輸出（更新 RM +3.7087, NOX -16.1236, CHAS +2.3408, LSTAT -0.4928）。
+  - [x] 特徵選擇的按鈕、表格、圖表與標籤依實際 CV 選取順序動態生成 (`renderKStepperButtons`)。
+  - [x] 切換演算法時同步更新特徵標籤與最佳 $k$，無資料時顯示未計算。
+  - [x] 清楚標示指標類型：Training, Cross-Validation, Test。
+  - [x] 檢查並確認所有模型、CSV、JSON、Notebook 下載連結有效。
 
-- [x] **Step 09：建立可重用 workflow，依確認範圍完成第二題**
-  - 建立抽象通用的 Python 回歸模組 `src/regression_workflow.py`，支援任意外部 CSV 配置檔。
-  - 建立 `data/BostonHousing.csv` (506 筆資料、14 欄位)，執行完整 CRISP-DM 分析流程並產出圖表、模型與指標。
-  - 產出 `outputs/boston_housing_linear_regression_model.pkl.gz` 與 `outputs/boston_housing_test_predictions.csv`。
+- [x] **Step 7：完成可重用 workflow 與部署**
+  - [x] 將資料準備、訓練、評估、匯出抽成通用模組 `src/regression_workflow.py`，供 50 Startups 與 Boston Housing 共用。
+  - [x] 使用 gzip + pickle 儲存可直接接受原始 DataFrame 輸入的完整 Pipeline 套件，驗證重載前後預測 100% 一致 (Max diff = 0.00e+00)。
+  - [x] 建立合理的模型監控與維護計畫（缺失率、未知類別、真實標籤回饋機制），誠實標示現況與未來計畫。
 
-- [x] **Step 10：同步成果、下載檔、離線資料與部署目錄**
-  - 更新 `src/export_web_data.py` 與 `src/pipeline.py`，將 50 Startups 與 Boston Housing 成果全面同步至 `outputs/`、`web/`、`web/downloads/`、`docs/` 及專案根目錄。
-  - 確保包含 `.nojekyll` 與 GitHub Pages 自動化部署 Actions (`.github/workflows/deploy-pages.yml`)。
+- [x] **Step 8：同步 Notebook 與報告**
+  - [x] 更新 `50_Startup_Multiple_Linear_Regression_CRISP_DM.ipynb`，包含 CRISP-DM 六階段、5-fold CV 特徵選擇、Lasso、Optuna、圖表與重載。
+  - [x] 於乾淨真實 Kernel 完整執行 Notebook，保留真實 outputs 與圖表。
+  - [x] 更新 `README.md`、`results.md`、`RunLog.md`，作業完成度表依實測填寫。
 
-- [x] **Step 11：執行數值與瀏覽器互動驗證**
-  - 實測案例 A（50 Startups 重現：Test RMSE 9137.99, R² 0.9347）、案例 B（Boston Housing 回歸：Test RMSE 5.7835, R² 0.5892）、案例 C（20 筆小樣本回歸，筆數正確無竄改）、案例 D（無效網址報錯）、案例 E（不適用資料報錯）、案例 F（Python sklearn vs JS 容差核對一致）。
-  - 17 項自動化單元測試全數 PASSED。
-
-- [x] **Step 12：更新報告、RunLog.md 與完成狀態**
-  - 詳細記錄 RunLog.md 執行指令、輸出檔與驗收結果。
-  - 更新 README.md 與 results.md，提交並 push 至 GitHub，確認 GitHub Pages 正常運作。
+- [x] **Step 9：測試與最終交付**
+  - [x] 執行並更新所有單元測試（更新原有斷言為驗證無洩漏 CV 方法與數值一致性，不寫死舊 k=2）。
+  - [x] 全套 19 項測試 100% 通過 (`python3 -m pytest -v tests/`)。
+  - [x] 完成完整檢驗與繁體中文最終成果交付報告。

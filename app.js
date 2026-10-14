@@ -7,7 +7,7 @@
 
 // Global Application State
 let APP_DATA = null;
-let currentAlgo = "Forward SFS (Lecture Stepwise)";
+let currentAlgo = "Forward SFS (5-Fold CV)";
 let currentK = 2; // Default to k=2 (Optimal Valley)
 let currentP1Chart = "actual_vs_pred";
 let currentBostonChart = "actual_vs_pred";
@@ -300,10 +300,12 @@ function drawPart1Chart(chartType) {
   }
 }
 
-// 3. Render Part 2 Feature Selection & Occam's Razor Valley
+// 3. Render Part 2 Feature Selection & 5-Fold CV SFS
 function renderPart2(part2) {
   if (!part2) return;
 
+  const algoData = getAlgorithmData(currentAlgo);
+  renderKStepperButtons(algoData);
   renderSummaryTable();
   updateKPIsForCurrentSelection();
   renderPart2Charts();
@@ -319,6 +321,8 @@ function displayMetric(val, formatter, fallback = "未計算") {
 
 // Normalize Algorithm Row into consistent schema
 function normalizeAlgoRow(r) {
+  const cv_rmse = typeof r.cv_rmse === "number" ? r.cv_rmse : null;
+  const cv_std = typeof r.cv_std === "number" ? r.cv_std : (typeof r.cv_rmse_std === "number" ? r.cv_rmse_std : null);
   const test_rmse = typeof r.test_rmse === "number" ? r.test_rmse : (typeof r.rmse === "number" ? r.rmse : null);
   const test_r2 = typeof r.test_r2 === "number" ? r.test_r2 : (typeof r.r2 === "number" ? r.r2 : null);
   const test_mae = typeof r.test_mae === "number" ? r.test_mae : (typeof r.mae === "number" ? r.mae : null);
@@ -336,6 +340,8 @@ function normalizeAlgoRow(r) {
     ...r,
     k: r.k || r.num_features || features.length,
     features,
+    cv_rmse,
+    cv_std,
     test_rmse,
     test_r2,
     test_mae,
@@ -344,8 +350,8 @@ function normalizeAlgoRow(r) {
     train_r2,
     adj_r2,
     f_stat,
-    // Aliases for compatibility
-    rmse: test_rmse,
+    // Aliases
+    rmse: cv_rmse !== null ? cv_rmse : test_rmse,
     r2: test_r2,
     mae: test_mae
   };
@@ -354,15 +360,83 @@ function normalizeAlgoRow(r) {
 // Retrieve data points for selected algorithm (NO unauthorized fallback to other algorithms)
 function getAlgorithmData(algoName) {
   if (!APP_DATA) return [];
-  if (APP_DATA.algorithms_benchmark && APP_DATA.algorithms_benchmark[algoName]) {
-    return APP_DATA.algorithms_benchmark[algoName].map(normalizeAlgoRow);
+  const bm = APP_DATA.algorithms_benchmark || {};
+
+  if (algoName.includes("5-Fold CV") || algoName === "Forward SFS") {
+    if (bm.sfs && bm.sfs.progression) return bm.sfs.progression.map(normalizeAlgoRow);
+    if (APP_DATA.part2 && APP_DATA.part2.progression_table) return APP_DATA.part2.progression_table.map(normalizeAlgoRow);
   }
-  // If Forward SFS not in benchmark map, check part2.progression_table for that specific algorithm only
-  if (algoName.includes("Forward SFS") && APP_DATA.part2 && APP_DATA.part2.progression_table) {
-    return APP_DATA.part2.progression_table.map(normalizeAlgoRow);
+  if (algoName.includes("Historical") || algoName.includes("Lecture")) {
+    if (APP_DATA.part2 && APP_DATA.part2.historical_leakage_demo && APP_DATA.part2.historical_leakage_demo.progression) {
+      return APP_DATA.part2.historical_leakage_demo.progression.map(normalizeAlgoRow);
+    }
   }
-  // Do NOT fake results with another algorithm
+  if (algoName.includes("Lasso")) {
+    if (bm.lasso_ols && bm.lasso_ols.progression) return bm.lasso_ols.progression.map(normalizeAlgoRow);
+  }
+  if (algoName.includes("RFE")) {
+    if (bm.rfe && bm.rfe.progression) return bm.rfe.progression.map(normalizeAlgoRow);
+  }
+  if (algoName.includes("ElasticNet")) {
+    if (bm.elasticnet_ols && bm.elasticnet_ols.progression) return bm.elasticnet_ols.progression.map(normalizeAlgoRow);
+  }
+  if (algoName.includes("Exhaustive")) {
+    if (bm.exhaustive_search && bm.exhaustive_search.best_per_k) return bm.exhaustive_search.best_per_k.map(normalizeAlgoRow);
+    if (APP_DATA.exhaustive_search && APP_DATA.exhaustive_search.best_per_k) return APP_DATA.exhaustive_search.best_per_k.map(normalizeAlgoRow);
+  }
   return [];
+}
+
+// Dynamically render K-Step buttons based on actual features and optimal k
+function renderKStepperButtons(algoData) {
+  const container = document.getElementById("k-steps-selector");
+  if (!container || !algoData || algoData.length === 0) return;
+
+  // Determine optimal k (by CV RMSE if available, otherwise test RMSE)
+  let bestRow = null;
+  const hasCv = algoData.some(r => typeof r.cv_rmse === "number");
+  if (hasCv) {
+    const valid = algoData.filter(r => typeof r.cv_rmse === "number");
+    const minVal = Math.min(...valid.map(r => r.cv_rmse));
+    bestRow = valid.find(r => r.cv_rmse === minVal);
+  } else {
+    const valid = algoData.filter(r => typeof r.test_rmse === "number");
+    if (valid.length > 0) {
+      const minVal = Math.min(...valid.map(r => r.test_rmse));
+      bestRow = valid.find(r => r.test_rmse === minVal);
+    }
+  }
+  const optimalK = bestRow ? bestRow.k : 2;
+
+  if (!algoData.some(r => r.k === currentK)) {
+    currentK = optimalK;
+  }
+
+  container.innerHTML = algoData.map(row => {
+    const isOptimal = row.k === optimalK;
+    const isActive = row.k === currentK;
+    const lastFeat = row.features.length > 0 ? row.features[row.features.length - 1] : `特徵${row.k}`;
+
+    return `
+      <button class="k-step-btn ${isOptimal ? 'optimal-sweet' : ''} ${isActive ? 'active' : ''}" data-k="${row.k}">
+        ${isOptimal ? '<i class="fa-solid fa-crown" style="color: #f59e0b;"></i>' : ''}
+        <span>k = ${row.k}</span>
+        <small style="color: ${isOptimal ? 'var(--emerald-optimal)' : 'var(--text-dim)'}; font-weight: ${isOptimal ? '700' : 'normal'};">
+          ${isOptimal ? '⭐最優: ' : ''}+${lastFeat}
+        </small>
+      </button>
+    `;
+  }).join("");
+
+  container.querySelectorAll(".k-step-btn").forEach(btn => {
+    btn.onclick = () => {
+      container.querySelectorAll(".k-step-btn").forEach(b => b.classList.remove("active"));
+      btn.classList.add("active");
+      currentK = parseInt(btn.dataset.k);
+      updateKPIsForCurrentSelection();
+      renderPart2Charts();
+    };
+  });
 }
 
 // Render Summary Table for Current Algorithm
@@ -376,31 +450,38 @@ function renderSummaryTable() {
     return;
   }
 
-  // Find minimum test_rmse to identify optimal valley objectively
-  const validRmses = algoData.map(r => r.test_rmse).filter(v => typeof v === "number");
-  const minRmse = validRmses.length > 0 ? Math.min(...validRmses) : null;
+  // Find optimal k by CV RMSE (primary) or Test RMSE
+  let minCv = null;
+  const validCvs = algoData.map(r => r.cv_rmse).filter(v => typeof v === "number");
+  if (validCvs.length > 0) minCv = Math.min(...validCvs);
+
+  let minTest = null;
+  const validTests = algoData.map(r => r.test_rmse).filter(v => typeof v === "number");
+  if (validTests.length > 0) minTest = Math.min(...validTests);
 
   summaryTbody.innerHTML = algoData.map(row => {
-    const isOptimal = minRmse !== null && row.test_rmse === minRmse;
+    const isOptimalCv = minCv !== null && row.cv_rmse === minCv;
     const lastFeat = row.features.length > 0 ? row.features[row.features.length - 1] : "—";
     const featStr = row.features.length > 0 ? row.features.join(" + ") : "無特徵";
 
     return `
-      <tr style="${isOptimal ? 'background: rgba(16, 185, 129, 0.08);' : ''}">
-        <td class="num-cell" style="font-weight: 800; color: ${isOptimal ? 'var(--emerald-optimal)' : 'var(--text-main)'};">k = ${row.k}</td>
+      <tr style="${isOptimalCv ? 'background: rgba(16, 185, 129, 0.08);' : ''}">
+        <td class="num-cell" style="font-weight: 800; color: ${isOptimalCv ? 'var(--emerald-optimal)' : 'var(--text-main)'};">k = ${row.k}</td>
         <td><strong>${lastFeat}</strong></td>
         <td><code style="font-size: 0.8rem; color: var(--text-code);">${featStr}</code></td>
-        <td class="num-cell" style="font-weight: 800; color: ${isOptimal ? 'var(--emerald-optimal)' : 'var(--text-main)'};">
+        <td class="num-cell" style="font-weight: 800; color: ${isOptimalCv ? 'var(--emerald-optimal)' : 'var(--cyan-primary)'};">
+          ${displayMetric(row.cv_rmse, formatCurrency)}
+        </td>
+        <td class="num-cell" style="font-weight: 700; color: var(--text-main);">
           ${displayMetric(row.test_rmse, formatCurrency)}
         </td>
-        <td class="num-cell" style="font-weight: 800; color: ${isOptimal ? 'var(--emerald-optimal)' : 'var(--text-main)'};">
+        <td class="num-cell" style="font-weight: 700; color: var(--text-main);">
           ${displayMetric(row.test_r2, v => formatNumber(v, 4))}
         </td>
         <td class="num-cell" style="color: var(--text-dim);">${displayMetric(row.train_rmse, formatCurrency)}</td>
-        <td class="num-cell" style="color: var(--text-dim);">${displayMetric(row.train_r2, v => formatNumber(v, 4))}</td>
         <td>
-          ${isOptimal 
-            ? '<span class="badge-tag tag-sweet">⭐ 最優谷地 (最低 Test RMSE)</span>' 
+          ${isOptimalCv 
+            ? '<span class="badge-tag tag-sweet">⭐ 最優谷地 (最低 CV RMSE)</span>' 
             : (row.k === 5 ? '<span class="badge-tag tag-info">全特徵 (基準模型)</span>' : '<span class="badge-tag tag-neutral">候選步進</span>')}
         </td>
       </tr>
@@ -422,16 +503,26 @@ function updateKPIsForCurrentSelection() {
   const row = algoData.find(x => x.k === currentK) || algoData[0];
   if (!row) return;
 
-  const validRmses = algoData.map(r => r.test_rmse).filter(v => typeof v === "number");
-  const minRmse = validRmses.length > 0 ? Math.min(...validRmses) : null;
-  const isOptimal = minRmse !== null && row.test_rmse === minRmse;
+  const validCvs = algoData.map(r => r.cv_rmse).filter(v => typeof v === "number");
+  const minCv = validCvs.length > 0 ? Math.min(...validCvs) : null;
+  const isOptimal = minCv !== null && row.cv_rmse === minCv;
 
-  // 1. Test RMSE Card
+  // 1. CV / Test RMSE Card
   const rmseEl = document.getElementById("val-kpi-rmse");
-  if (rmseEl) rmseEl.textContent = displayMetric(row.test_rmse, formatCurrency);
+  if (rmseEl) {
+    if (row.cv_rmse !== null) {
+      rmseEl.textContent = displayMetric(row.cv_rmse, formatCurrency);
+    } else {
+      rmseEl.textContent = displayMetric(row.test_rmse, formatCurrency);
+    }
+  }
   const rmseBadge = document.getElementById("badge-kpi-rmse");
   if (rmseBadge) {
-    rmseBadge.textContent = isOptimal ? `最低點谷地 (k = ${row.k})` : `特徵數 k = ${row.k}`;
+    if (row.cv_rmse !== null) {
+      rmseBadge.textContent = isOptimal ? `CV 最優 (k = ${row.k})` : `5-Fold CV (k = ${row.k})`;
+    } else {
+      rmseBadge.textContent = `測試集 (k = ${row.k})`;
+    }
     rmseBadge.className = isOptimal ? "badge-tag tag-sweet" : "badge-tag tag-neutral";
   }
   const rmseCard = document.getElementById("card-kpi-rmse");
@@ -463,7 +554,8 @@ function updateKPIsForCurrentSelection() {
   const descEl = document.getElementById("valley-desc-text");
   if (descEl) {
     const featStr = row.features.length > 0 ? row.features.join(", ") : "未選取";
-    descEl.innerHTML = `當前演算法：<strong>${currentAlgo}</strong>，特徵數 <strong>k = ${row.k}</strong>（包含特徵：<span style="color: var(--cyan-primary);">${featStr}</span>）。實測 Test RMSE：<strong>${displayMetric(row.test_rmse, formatCurrency)}</strong>，Test R²：<strong>${displayMetric(row.test_r2, v => formatNumber(v, 4))}</strong>。`;
+    const cvInfo = row.cv_rmse !== null ? `，5-Fold CV RMSE：<strong>${displayMetric(row.cv_rmse, formatCurrency)}</strong>` : "";
+    descEl.innerHTML = `當前演算法：<strong>${currentAlgo}</strong>，特徵數 <strong>k = ${row.k}</strong>（包含特徵：<span style="color: var(--cyan-primary);">${featStr}</span>）${cvInfo}，獨立測試集 RMSE：<strong>${displayMetric(row.test_rmse, formatCurrency)}</strong>，Test R²：<strong>${displayMetric(row.test_r2, v => formatNumber(v, 4))}</strong>。`;
   }
 }
 
@@ -1439,16 +1531,8 @@ function setupEventListeners() {
       pill.classList.add("active");
       currentAlgo = pill.dataset.algo;
 
-      // Update K labels if needed
-      const k3Label = document.getElementById("k3-label");
-      if (k3Label) {
-        if (currentAlgo.includes("Lecture") || currentAlgo === "RFE" || currentAlgo === "ElasticNet") {
-          k3Label.textContent = "+Administration";
-        } else {
-          k3Label.textContent = "+State_New York";
-        }
-      }
-
+      const algoData = getAlgorithmData(currentAlgo);
+      renderKStepperButtons(algoData);
       renderSummaryTable();
       updateKPIsForCurrentSelection();
       renderPart2Charts();
