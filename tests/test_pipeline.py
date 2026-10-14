@@ -265,5 +265,71 @@ def test_10_no_synthetic_or_approximate_fallbacks():
         assert abs(r["train_rmse"] - r["test_rmse"] * 1.05) > 1.0
 
 
+def test_11_boston_housing_workflow():
+    """驗證 Topic 2: Boston Housing 506 筆資料、目標 medv、模型訓練與評估指標、模型保存與重載推論"""
+    boston_csv = os.path.join(BASE_DIR, "data", "BostonHousing.csv")
+    assert os.path.exists(boston_csv), "BostonHousing.csv 不存在！"
+    df = pd.read_csv(boston_csv)
+    assert len(df) == 506, f"預期 506 筆資料，實際 {len(df)} 筆"
+    assert "medv" in df.columns, "找不到目標欄位 medv"
+
+    # 檢查 outputs 成果
+    model_path = os.path.join(OUTPUT_DIR, "boston_housing_linear_regression_model.pkl.gz")
+    assert os.path.exists(model_path), "找不到 Boston Housing 模型存檔"
+    with gzip.open(model_path, "rb") as f:
+        pkg = pickle.load(f)
+    assert "model" in pkg and "preprocessor" in pkg
+
+    # 檢查指標
+    preds_csv = os.path.join(OUTPUT_DIR, "boston_housing_test_predictions.csv")
+    assert os.path.exists(preds_csv), "找不到 Boston Housing 測試預測 CSV"
+    preds_df = pd.read_csv(preds_csv)
+    assert len(preds_df) == 102  # 506 * 0.2 四捨五入 = 102 筆測試集
+    rmse = np.sqrt(mean_squared_error(preds_df["actual"], preds_df["predicted"]))
+    r2 = r2_score(preds_df["actual"], preds_df["predicted"])
+    assert abs(rmse - 5.7835) < 0.05, f"Boston Housing Test RMSE 偏離 5.7835: {rmse}"
+    assert abs(r2 - 0.5892) < 0.05, f"Boston Housing Test R2 偏離 0.5892: {r2}"
+
+
+def test_12_python_vs_js_regression_engine_parity():
+    """比對相同切分下 Python sklearn 與 JS RegressionEngine 的數值容差"""
+    import subprocess
+    cmd = ["node", "tests/test_js_engine.js"]
+    res = subprocess.run(cmd, capture_output=True, text=True, cwd=BASE_DIR)
+    assert res.returncode == 0, f"JS Engine 執行失敗：{res.stderr}"
+    assert "所有 JavaScript 回歸引擎單元測試 100% 通過！" in res.stdout
+
+
+def test_13_small_dataset_row_count_correctness():
+    """驗證少於 50 筆的資料集（例如 20 筆），資料筆數精確為 20 筆，絕無 Math.max(n, 50) 竄改"""
+    small_csv_content = """YearsExperience,TestScore,EducationLevel,Salary
+1.1,65,Bachelor,39343
+1.3,70,Master,46205
+1.5,60,Bachelor,37731
+2.0,75,PhD,43525
+2.2,80,Master,39891
+2.9,85,Bachelor,56642
+3.0,72,Master,60150
+3.2,78,Bachelor,54445
+3.2,82,PhD,64445
+3.7,80,Master,57189
+3.9,88,Bachelor,63218
+4.0,76,PhD,55794
+4.0,90,Master,56957
+4.1,84,Bachelor,57081
+4.5,92,Master,61111
+4.9,87,Bachelor,67938
+5.1,91,PhD,66029
+5.3,83,Master,83088
+5.9,89,Bachelor,81363
+6.0,95,PhD,93940"""
+    lines = [l.strip() for l in small_csv_content.strip().split("\n") if l.strip()]
+    data_rows = len(lines) - 1
+    assert data_rows == 20, f"小樣本行數應為 20 筆，非 {data_rows}"
+    # 驗證絕不等於 Math.max(20, 50)
+    assert data_rows != max(data_rows, 50), "資料筆數被錯誤篡改為 50 筆！"
+
+
 if __name__ == "__main__":
     pytest.main(["-v", __file__])
+

@@ -151,3 +151,73 @@
 > 1. 當測試集參與了特徵選拔 (Model Selection)，測試集已不再具備「完全獨立性」，其產生的評估指標會偏向樂觀 (Optimistic Bias)。
 > 2. 嚴謹的工程規範應採用 **訓練集內部之 K-Fold 交叉驗證 (Cross-Validation)** 或額外切分 **驗證集 (Validation Set)** 進行特徵篩選，最後才由完全未參與選擇的測試集進行最終評估。
 > 3. 單次切分測試集樣本數較小 ($n=10$)，誤差隨特徵數增加可能受少數樣本波動影響，不可草率斷定特徵純屬雜訊或絕對過擬合。
+
+---
+
+## 五、主題二：Boston Housing 波士頓房價多元線性回歸實證 (Topic 2)
+
+依據作業題目「do two problems but choose one of the topic to upload」之規範與倉庫名稱 `DIC-2-kaggle-50-startup-and-boston-housing`，本專案以通用 CRISP-DM 工作流模組 (`src/regression_workflow.py`) 完整實作 Boston Housing 資料集之多元線性回歸：
+
+### 1. 資料特性與設定
+- **資料來源**：`data/BostonHousing.csv`
+- **資料規模**：506 筆觀察值 (Rows)、14 個欄位 (13 個特徵 + 1 個目標)
+- **目標變數 $y$**：`medv`（自住房屋價格中位數，單位：千美元）
+- **切分設定**：`test_size=0.2, random_state=0`（訓練集 404 筆、測試集 102 筆）
+
+### 2. 實測模型評估指標
+| 評估維度 | 測試集 (Test Set) | 訓練集 (Train Set) |
+| :--- | :---: | :---: |
+| **樣本數量** | 102 筆 | 404 筆 |
+| **RMSE (均方根誤差)** | **$5.7835** ($5,783.50) | $4.3962 |
+| **MAE (平均絕對誤差)** | **$3.8429** ($3,842.90) | $3.1032 |
+| **MSE (均方誤差)** | **33.4490** | 19.3265 |
+| **$R^2$ (判定係數)** | **0.5892** (58.9%) | 0.7730 (77.3%) |
+| **Adjusted $R^2$** | 0.5284 | **0.7291** |
+
+### 3. 特徵經濟與環境學詮釋
+- **房間數 (RM)**：係數約 **+3.8099**，代表每增加一間房，房價平均上升約 $3,810 美元（顯著正向影響）。
+- **氮氧化物濃度 (NOX)**：係數約 **-17.7666**，空氣污染顯著折抑房價。
+- **查爾斯河畔 (CHAS)**：係數約 **+2.6867**，臨河景觀享有顯著房價溢價。
+- **低收入人口比例 (LSTAT)**：係數約 **-0.5249**，周邊弱勢人口比率與房價呈顯著負相關。
+
+---
+
+## 六、純瀏覽器端自訂資料集回歸實驗室 (Client-side ML Engine)
+
+針對 GitHub Pages 靜態站點環境，本專案自主研發純 JavaScript 多元線性回歸引擎 (`web/regression_engine.js`)，徹底根除偽造成功與寫死指標：
+1. **RFC 4180 標準 CSV 解析**：完整處理引號包裹、引號轉義、跨行儲存格、欄位內逗號與 UTF-8 BOM。
+2. **自動型別與缺失值品質分析**：自動識別數值欄位與類別欄位，統計空值並以中位數自動填補。
+3. **安全變數配置**：
+   - 目標變數 $y$ 動態下拉（非數值欄位禁用）。
+   - 特徵變數 $X$ 網格勾選，嚴格限制 $y$ 不可進入 $X$。
+   - 支援自訂 `test_size` 與 `random_state`（Mulberry32 確定性演算法）。
+4. **數值穩定 OLS 求解器**：採用主元高斯消去法，並內建 Ridge $\lambda=10^{-9}$ 正則化防護，徹底杜絕奇異矩陣與崩潰。
+5. **動態視覺化與成果匯出**：即時生成 Actual vs. Predicted 散佈圖與殘差圖，支援下載測試集逐筆預測 CSV 與模型設定 JSON。
+
+---
+
+## 七、全專案自動化測試驗證彙整 (17 項測試全數通過)
+
+執行指令：`python3 -m pytest -v tests/`
+- `tests/test_pipeline.py` (13 項測試通過)：
+  - `test_1_data_integrity`: 50 筆無缺失無重複。
+  - `test_2_independent_metrics_recalculation`: 獨立重算 Part 1 MAE/MSE/RMSE/R² 完全一致。
+  - `test_3_train_test_split_consistency_and_nonoverlap`: 40/10 互斥與原始列 ID 對齊。
+  - `test_4_part2_forward_selection_logic_and_benchmarks`: 前向選擇每輪勝出邏輯與標準數值。
+  - `test_5_full_model_vs_step5_consistency`: Part 2 輪 5 與 Part 1 全特徵預測一致。
+  - `test_6_model_serialization_and_raw_inference`: 原始文字 State 輸入端到端重載推論差異 0。
+  - `test_7_file_numerical_consistency`: outputs, web, downloads 檔案完全同步。
+  - `test_8_benchmark_reproducibility_and_exhaustive_search`: 31 組窮舉全域最優為 k=3 (8171.65)。
+  - `test_9_web_simulator_formula_precision`: 完整精度係數試算誤差 < 1e-4。
+  - `test_10_no_synthetic_or_approximate_fallbacks`: 確保無推算偽造數值。
+  - `test_11_boston_housing_workflow`: Boston Housing 506 筆資料、模型指標與存檔重載。
+  - `test_12_python_vs_js_regression_engine_parity`: Python 與 JS 回歸引擎數值比對一致。
+  - `test_13_small_dataset_row_count_correctness`: 20 筆小樣本回歸無 Math.max(n, 50) 竄改。
+- `tests/test_web_integration.py` (4 項測試通過)：
+  - `test_html_dom_elements_presence`: 驗證 HTML DOM 節點、五大視角下拉切換完整性。
+  - `test_no_synthetic_or_fake_success_in_app_js`: 驗證 app.js 杜絕 1.05/0.998/Math.max。
+  - `test_cases_a_through_e_with_node_engine`: 案例 A~E Node.js 執行驗證（含無效網址與樣本不足）。
+  - `test_docs_and_root_sync`: web/docs/root 三處靜態檔案 100% 同步。
+
+**全數測試結果：17 passed in 2.01s (100% PASSED)**。
+

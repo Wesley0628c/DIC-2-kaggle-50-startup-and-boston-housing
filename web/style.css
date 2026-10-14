@@ -1126,3 +1126,57 @@ body {
   color: var(--cyan-primary);
   text-decoration: none;
 }
+
+/* Custom Dataset Engine & Boston Housing Enhancements */
+.btn-sm-preset {
+  background: rgba(6, 182, 212, 0.12);
+  border: 1px solid rgba(6, 182, 212, 0.3);
+  color: var(--cyan-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-sm-preset:hover {
+  background: var(--cyan-primary);
+  color: #040d1a;
+  box-shadow: 0 2px 8px rgba(6, 182, 212, 0.4);
+  transform: translateY(-1px);
+}
+
+#custom-features-container label {
+  transition: all 0.15s ease;
+  user-select: none;
+}
+
+#custom-features-container label:hover {
+  background: rgba(6, 182, 212, 0.12) !important;
+  color: var(--cyan-primary);
+}
+
+.custom-feat-chk {
+  accent-color: var(--cyan-primary);
+  cursor: pointer;
+}
+
+@media (max-width: 768px) {
+  .hero-main-title {
+    font-size: 1.8rem;
+  }
+  .hero-stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  .dataset-controls-grid {
+    grid-template-columns: 1fr;
+  }
+  #custom-config-panel .glass-panel {
+    padding: 16px;
+  }
+}
+

@@ -128,6 +128,30 @@ def generate_web_json():
             "predictions": p2_step_preds[str(step_num)]
         })
 
+    # 4. 讀取 Boston Housing 結果 (若存在)
+    boston_model_path = os.path.join(OUTPUT_DIR, "boston_housing_linear_regression_model.pkl.gz")
+    boston_pred_path = os.path.join(OUTPUT_DIR, "boston_housing_test_predictions.csv")
+    if os.path.exists(boston_model_path) and os.path.exists(boston_pred_path):
+        with gzip.open(boston_model_path, "rb") as f:
+            b_pkg = pickle.load(f)
+        b_pred_df = pd.read_csv(boston_pred_path)
+        boston_predictions = b_pred_df.to_dict(orient="records")
+        boston_metrics = b_pkg["metrics"]
+        b_model = b_pkg["model"]
+        boston_intercept = float(b_model.intercept_)
+        boston_coefficients = {name: float(coef) for name, coef in zip(b_pkg["feature_names"], b_model.coef_)}
+        b_terms = [f"{boston_intercept:.4f}"]
+        for name, coef in boston_coefficients.items():
+            sign = "+" if coef >= 0 else "-"
+            b_terms.append(f"{sign} {abs(coef):.4f} * ({name})")
+        boston_formula = "medv = " + " ".join(b_terms)
+    else:
+        boston_predictions = []
+        boston_metrics = {}
+        boston_formula = ""
+        boston_coefficients = {}
+        boston_intercept = 0.0
+
     # 動態找出 Part 2 前向選擇路徑中的最低 RMSE 輪次
     best_p2_round = min(p2_rounds_details, key=lambda x: x["test_rmse"])
 
@@ -256,6 +280,30 @@ def generate_web_json():
             "all_31_subsets": exhaustive_31_subsets,
             "best_per_k": benchmarks_data.get("algorithms", {}).get("Exhaustive", []),
             "overall_best": benchmarks_data.get("exhaustive_overall_best", {})
+        },
+        "boston_housing": {
+            "title": "Topic 2: Boston Housing 波士頓房價多元線性回歸實證 (CRISP-DM Workflow)",
+            "description": "經典波士頓房價回歸資料集 (506 筆樣本、13 項環境與社區特徵、目標變數為住宅中位數價值 MEDV，以千美元計)。",
+            "features_info": {
+                "crim": "城鎮人均犯罪率",
+                "zn": "大面積住宅用地比例",
+                "indus": "非零售商業用地比例",
+                "chas": "查爾斯河虛擬變數 (邊界為河為 1)",
+                "nox": "一氧化氮濃度 (ppm)",
+                "rm": "住宅平均房間數",
+                "age": "1940 年前建造之自住單位比例",
+                "dis": "到五個就業中心之加權距離",
+                "rad": "徑向公路通道指數",
+                "tax": "每萬美元全值財產稅率",
+                "ptratio": "學生與教師比例",
+                "b": "城鎮黑人比例相關指數",
+                "lstat": "人口中低地位社群比例 (%)"
+            },
+            "metrics": boston_metrics,
+            "formula": boston_formula,
+            "coefficients": boston_coefficients,
+            "intercept": boston_intercept,
+            "test_predictions": boston_predictions
         },
         "discussion": {
             "insights": [

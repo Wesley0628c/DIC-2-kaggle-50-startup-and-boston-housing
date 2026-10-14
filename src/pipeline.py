@@ -39,7 +39,7 @@ def sync_artifacts():
     os.makedirs(os.path.join(WEB_DIR, "images"), exist_ok=True)
 
     # 1. 複製圖表到 web/images 與 docs/images
-    for img_name in ["part1_scatter_plots.png", "part1_evaluation_plots.png", "part2_features_trend.png"]:
+    for img_name in ["part1_scatter_plots.png", "part1_evaluation_plots.png", "part2_features_trend.png", "boston_housing_evaluation_plots.png"]:
         src_path = os.path.join(OUTPUT_DIR, img_name)
         if os.path.exists(src_path):
             shutil.copy(src_path, os.path.join(WEB_DIR, "images", img_name))
@@ -52,13 +52,22 @@ def sync_artifacts():
         "part1_test_predictions.csv",
         "part2_forward_selection_summary.csv",
         "part2_forward_selection_candidates.csv",
-        "exhaustive_search_31_subsets.csv"
+        "exhaustive_search_31_subsets.csv",
+        "boston_housing_linear_regression_model.pkl.gz",
+        "boston_housing_test_predictions.csv"
     ]
     for fn in download_files:
         src_path = os.path.join(OUTPUT_DIR, fn)
         if os.path.exists(src_path):
             shutil.copy(src_path, os.path.join(DOWNLOADS_DIR, fn))
             shutil.copy(src_path, os.path.join(DOCS_DIR, "downloads", fn))
+
+    # 複製 Jupyter Notebook
+    nb_name = "50_Startup_Multiple_Linear_Regression_CRISP_DM.ipynb"
+    nb_src = os.path.join(BASE_DIR, nb_name)
+    if os.path.exists(nb_src):
+        shutil.copy(nb_src, os.path.join(DOWNLOADS_DIR, nb_name))
+        shutil.copy(nb_src, os.path.join(DOCS_DIR, "downloads", nb_name))
 
     # 複製 results.md
     results_path = os.path.join(BASE_DIR, "results.md")
@@ -73,7 +82,7 @@ def sync_artifacts():
         shutil.copy(data_json_src, os.path.join(DOCS_DIR, "downloads", "data.json"))
 
     # 3. 同步前端站點 HTML/CSS/JS 到 docs/ 以及專案根目錄 (確保 GitHub Pages 不論選 /docs 還是 / (root) 均保證 100% 正常載入)
-    for web_file in ["index.html", "style.css", "app.js", "chart.umd.min.js", "data.json", "default_data.js"]:
+    for web_file in ["index.html", "style.css", "app.js", "regression_engine.js", "chart.umd.min.js", "data.json", "default_data.js"]:
         src_path = os.path.join(WEB_DIR, web_file)
         if os.path.exists(src_path):
             shutil.copy(src_path, os.path.join(DOCS_DIR, web_file))
@@ -105,11 +114,27 @@ def main():
     p2_res = run_part2()
 
     # 步驟 4: 五大演算法基準評估與窮舉
-    print("\n[Stage 4/5] 執行五大特徵選擇演算法真實基準評估與 31 組全子集窮舉...")
+    print("\n[Stage 4/6] 執行五大特徵選擇演算法真實基準評估與 31 組全子集窮舉...")
     benchmarks_res = execute_benchmarks()
 
-    # 步驟 5: 匯出網頁數據
-    print("\n[Stage 5/5] 匯出結構化網頁 data.json 與報告...")
+    # 步驟 5: 執行 Topic 2: Boston Housing 通用回歸工作流
+    print("\n[Stage 5/6] 執行 Topic 2: Boston Housing 多元回歸實證 (通用 Workflow)...")
+    from regression_workflow import RegressionWorkflow
+    boston_csv = os.path.join(BASE_DIR, "data", "BostonHousing.csv")
+    if os.path.exists(boston_csv):
+        boston_wf = RegressionWorkflow(
+            dataset_name="Boston_Housing",
+            data_source=boston_csv,
+            target_column="medv",
+            test_size=0.2,
+            random_state=0,
+            output_dir=OUTPUT_DIR
+        )
+        boston_res = boston_wf.run_full_pipeline()
+        print(f"Boston Housing 執行完成！Test RMSE: {boston_res['metrics']['test']['rmse']:.4f}, Test R2: {boston_res['metrics']['test']['r2']:.4f}")
+
+    # 步驟 6: 匯出網頁數據
+    print("\n[Stage 6/6] 匯出結構化網頁 data.json 與報告...")
     web_data = generate_web_json()
 
     # 同步檔案

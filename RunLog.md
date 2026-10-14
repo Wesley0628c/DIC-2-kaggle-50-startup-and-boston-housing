@@ -188,3 +188,67 @@
 - **執行指令**：`python3 src/pipeline.py`
 - **主要結果**：全自動產出資料、Part 1、Part 2、基準演算法、全子集窮舉、匯出 web 資料與同步複製至 `docs/` 及 `web/downloads/`。
 - **驗證狀態**：成功 (Passed)
+
+---
+
+### Step 20：建立通用 CRISP-DM 回歸工作流模組與 Boston Housing 實證分析
+- **執行時間**：2026-10-14 16:30
+- **執行指令**：`python3 -c "from src.regression_workflow import RegressionWorkflow; ..."`
+- **主要結果**：
+  1. 建立通用抽象回歸類別 `src/regression_workflow.py`，參數化資料來源、X/y 選擇、One-Hot 編碼、中位數填補與切分評估。
+  2. 建立 `data/BostonHousing.csv` (506 筆資料、14 欄位)。
+  3. 執行 Boston Housing 回歸實證：訓練集 404 筆、測試集 102 筆，Test RMSE: 5.7835, Test R²: 0.5892, Train Adj R²: 0.7291。
+  4. 產出評估散佈圖、殘差圖、逐筆預測 CSV 與二進位模型存檔 `boston_housing_linear_regression_model.pkl.gz`。
+- **輸出檔案**：`src/regression_workflow.py`, `outputs/boston_housing_*`
+- **驗證狀態**：成功 (Passed)
+
+---
+
+### Step 21：建立純前端瀏覽器端線性回歸求解引擎與修正自訂 Dataset 假成功
+- **執行時間**：2026-10-14 16:40
+- **執行指令**：`node tests/test_js_engine.js`
+- **主要結果**：
+  1. 徹底移除 `app.js` 舊版中寫死之常數 ($9137.99, R² 0.9347)、`Math.max(lines.length - 1, 50)` 與假成功 fallback。
+  2. 建立純前端線性回歸函式庫 `web/regression_engine.js`：包含 RFC 4180 CSV 解析器、自動型態與缺失值分析、Mulberry32 可重現切分、主元高斯消去法求解器 + Ridge $\lambda=10^{-9}$ 正則化防護。
+  3. 前端介面支援遠端公開 CSV 網址（含 CORS 錯誤診斷）與本機 CSV 上傳（FileReader API）。
+  4. 支援動態 y 下拉、X 勾選（y 不可進入 X）、前 5 筆預覽、真實總筆數、Chart.js Actual vs Pred 與殘差圖、逐筆預測 CSV/JSON 下載。
+  5. 執行 Node.js 單元測試，50 Startups、Boston Housing 與 3 大異常案例全數通過。
+- **輸出檔案**：`web/regression_engine.js`, `tests/test_js_engine.js`
+- **驗證狀態**：成功 (Passed)
+
+---
+
+### Step 22：修正 Jupyter Notebook 執行錯誤與原始輸入推論驗證
+- **執行時間**：2026-10-14 16:48
+- **執行指令**：`python3 scripts/generate_notebook.py`
+- **主要結果**：
+  1. 修正首個代碼單元格遺漏 `import os` 的問題。
+  2. 在 CRISP-DM Deployment 儲存格中建立 `predict_raw_df` 端到端推論函式，直接傳入包含原始文字 State 的 DataFrame，驗證重載模型預測差異為 `0.00e+00`。
+  3. 自動使用 `jupyter nbconvert --execute --inplace` 在乾淨真實 Kernel 完整執行 Notebook，保留真實 execution_count、表格輸出與高解析度圖表。
+  4. 自動同步產出之 Notebook 至 `web/downloads/` 與 `docs/downloads/`。
+- **輸出檔案**：`50_Startup_Multiple_Linear_Regression_CRISP_DM.ipynb`
+- **驗證狀態**：成功 (Passed)
+
+---
+
+### Step 23：擴充自動化測試套件至 17 大維度 (100% 通過)
+- **執行時間**：2026-10-14 20:10
+- **執行指令**：`python3 -m pytest -v tests/`
+- **主要結果**：
+  - `test_pipeline.py` (13 項測試全數通過)：涵蓋資料完整性、指標獨立重算、切分互斥性、前向選擇勝出判定、全模型與輪 5 對齊、模型原始推論、檔案一致性、31 組窮舉驗證、前端完整精度試算、無假造指標、Boston Housing 成果檢驗、Python vs JS 數值一致性、小樣本筆數精確度。
+  - `test_web_integration.py` (4 項測試全數通過)：涵蓋 HTML DOM 節點完整性、五大視角下拉切換、app.js 杜絕 1.05/0.998/Math.max、案例 A~E Node.js 執行驗證、web/docs/root 三處靜態檔案 100% 同步。
+  - **總計成果**：**17 passed in 2.01s (100% PASSED)**。
+- **輸出檔案**：`tests/test_web_integration.py`
+- **驗證狀態**：成功 (Passed)
+
+---
+
+### Step 24：端到端 Pipeline 完整同步與 GitHub Pages 部署就緒
+- **執行時間**：2026-10-14 20:12
+- **執行指令**：`python3 src/pipeline.py`
+- **主要結果**：
+  - 重新執行 6 大 Stage，將所有成果完整同步至 `outputs/`、`web/`、`web/downloads/`、`docs/` 與專案根目錄。
+  - 確保三處皆包含 `.nojekyll`。
+  - GitHub Pages 部署 Actions 檔案 `.github/workflows/deploy-pages.yml` 已配置完成。
+- **驗證狀態**：成功 (Passed)
+

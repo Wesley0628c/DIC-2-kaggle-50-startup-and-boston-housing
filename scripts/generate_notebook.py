@@ -1,5 +1,7 @@
 import json
 import os
+import subprocess
+import shutil
 
 def create_notebook():
     nb = {
@@ -26,10 +28,11 @@ def create_notebook():
             },
             {
                 "cell_type": "code",
-                "execution_count": 1,
+                "execution_count": None,
                 "metadata": {},
                 "outputs": [],
                 "source": [
+                    "import os\n",
                     "import pandas as pd\n",
                     "import numpy as np\n",
                     "import requests\n",
@@ -122,7 +125,7 @@ def create_notebook():
             },
             {
                 "cell_type": "code",
-                "execution_count": 4,
+                "execution_count": None,
                 "metadata": {},
                 "outputs": [],
                 "source": [
@@ -130,15 +133,19 @@ def create_notebook():
                     "X = data.drop('Profit', axis=1)\n",
                     "y = data['Profit']\n",
                     "\n",
+                    "# 同步切分索引以供後續原始輸入驗證\n",
+                    "train_idx, test_idx = train_test_split(np.arange(len(data)), test_size=0.2, random_state=0)\n",
+                    "\n",
                     "# 使用 ColumnTransformer 進行 OneHot 編碼 (State 位於索引 3)\n",
                     "ct = ColumnTransformer(transformers=[('encoder', OneHotEncoder(), [3])], remainder='passthrough')\n",
-                    "X = ct.fit_transform(X)\n",
+                    "X_trans = ct.fit_transform(X)\n",
                     "\n",
-                    "# 避免 Dummy Variable Trap (剔除一個虛擬變數欄位)\n",
-                    "X = X[:, 1:]\n",
+                    "# 避免 Dummy Variable Trap (剔除首個虛擬變數欄位，即 California)\n",
+                    "X_proc = X_trans[:, 1:]\n",
                     "\n",
-                    "# 切分訓練集與測試集\n",
-                    "X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=0)\n",
+                    "# 依切分索引取得訓練集與測試集\n",
+                    "X_train, X_test = X_proc[train_idx], X_proc[test_idx]\n",
+                    "y_train, y_test = y.iloc[train_idx].values, y.iloc[test_idx].values\n",
                     "print(f\"X_train shape: {X_train.shape}, X_test shape: {X_test.shape}\")\n",
                     "print(f\"y_train shape: {y_train.shape}, y_test shape: {y_test.shape}\")"
                 ]
@@ -153,7 +160,7 @@ def create_notebook():
             },
             {
                 "cell_type": "code",
-                "execution_count": 5,
+                "execution_count": None,
                 "metadata": {},
                 "outputs": [],
                 "source": [
@@ -177,7 +184,7 @@ def create_notebook():
             },
             {
                 "cell_type": "code",
-                "execution_count": 6,
+                "execution_count": None,
                 "metadata": {},
                 "outputs": [],
                 "source": [
@@ -210,7 +217,7 @@ def create_notebook():
             },
             {
                 "cell_type": "code",
-                "execution_count": 7,
+                "execution_count": None,
                 "metadata": {},
                 "outputs": [],
                 "source": [
@@ -239,16 +246,24 @@ def create_notebook():
             },
             {
                 "cell_type": "code",
-                "execution_count": 8,
+                "execution_count": None,
                 "metadata": {},
                 "outputs": [],
                 "source": [
                     "os.makedirs('outputs', exist_ok=True)\n",
+                    "\n",
+                    "# 定義端到端推論函式，直接接收原始 DataFrame，自動執行 One-Hot 與 Dummy Variable Trap 移除\n",
+                    "def predict_raw_df(raw_df):\n",
+                    "    enc = ct.transform(raw_df)\n",
+                    "    proc = enc[:, 1:]\n",
+                    "    return regressor.predict(proc)\n",
+                    "\n",
                     "model_pkg = {\n",
                     "    'column_transformer': ct,\n",
                     "    'model': regressor,\n",
                     "    'reference_state': 'California',\n",
-                    "    'feature_names': feature_names\n",
+                    "    'feature_names': feature_names,\n",
+                    "    'predict_raw': predict_raw_df\n",
                     "}\n",
                     "\n",
                     "save_path = 'outputs/part1_linear_regression_model.pkl.gz'\n",
@@ -256,12 +271,19 @@ def create_notebook():
                     "    pickle.dump(model_pkg, f)\n",
                     "print(f\"✅ 模型已成功壓縮保存至：{save_path}\")\n",
                     "\n",
-                    "# 重載驗證\n",
+                    "# 重載驗證 1：特徵矩陣推論比對\n",
                     "with gzip.open(save_path, 'rb') as f:\n",
                     "    loaded_pkg = pickle.load(f)\n",
                     "reloaded_preds = loaded_pkg['model'].predict(X_test)\n",
                     "max_diff = np.max(np.abs(reloaded_preds - y_pred))\n",
-                    "print(f\"重載推論最大差異 (Max Diff): {max_diff:.2e} (完全一致！)\")"
+                    "print(f\"重載推論最大差異 (Max Diff): {max_diff:.2e} (完全一致！)\")\n",
+                    "\n",
+                    "# 重載驗證 2：原始 DataFrame 輸入端到端推論比對 (講義核心要求)\n",
+                    "raw_test_data = data.drop('Profit', axis=1).iloc[test_idx]\n",
+                    "raw_reloaded_preds = loaded_pkg['predict_raw'](raw_test_data)\n",
+                    "raw_max_diff = np.max(np.abs(raw_reloaded_preds - y_pred))\n",
+                    "print(f\"原始欄位輸入推論最大差異 (Raw Input Max Diff): {raw_max_diff:.2e} (完全一致！)\")\n",
+                    "assert raw_max_diff < 1e-9, \"原始欄位推論必須與模型預測完全一致\""
                 ]
             },
             {
@@ -285,7 +307,7 @@ def create_notebook():
             },
             {
                 "cell_type": "code",
-                "execution_count": 9,
+                "execution_count": None,
                 "metadata": {},
                 "outputs": [],
                 "source": [
@@ -352,7 +374,7 @@ def create_notebook():
             },
             {
                 "cell_type": "code",
-                "execution_count": 10,
+                "execution_count": None,
                 "metadata": {},
                 "outputs": [],
                 "source": [
@@ -386,7 +408,7 @@ def create_notebook():
             },
             {
                 "cell_type": "code",
-                "execution_count": 11,
+                "execution_count": None,
                 "metadata": {},
                 "outputs": [],
                 "source": [
@@ -452,7 +474,29 @@ def create_notebook():
     output_path = "50_Startup_Multiple_Linear_Regression_CRISP_DM.ipynb"
     with open(output_path, "w", encoding="utf-8") as f:
         json.dump(nb, f, indent=2, ensure_ascii=False)
-    print(f"Notebook created at: {output_path}")
+    print(f"Notebook template written to: {output_path}")
+
+    # 執行乾淨 kernel 並保留真實 outputs (圖片、文字與真實 execution_count)
+    print("🚀 正在啟動真實 Kernel 執行 Notebook...")
+    cmd = [
+        "jupyter", "nbconvert",
+        "--to", "notebook",
+        "--execute",
+        "--inplace",
+        output_path
+    ]
+    res = subprocess.run(cmd, capture_output=True, text=True)
+    if res.returncode != 0:
+        print("❌ Notebook 執行失敗：", res.stderr)
+        raise RuntimeError(f"Notebook execution failed: {res.stderr}")
+    print("✅ Notebook 已於真實 Kernel 成功執行完畢，所有真實 Outputs 與圖表皆已寫入！")
+
+    # 同步複製到 downloads 目錄
+    for target_dir in ["web/downloads", "docs/downloads"]:
+        os.makedirs(target_dir, exist_ok=True)
+        dest = os.path.join(target_dir, "50_Startup_Multiple_Linear_Regression_CRISP_DM.ipynb")
+        shutil.copy2(output_path, dest)
+        print(f"✅ 已同步至：{dest}")
 
 if __name__ == "__main__":
     create_notebook()

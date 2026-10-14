@@ -16,6 +16,8 @@
   
   <!-- Local Chart.js Library -->
   <script src="chart.umd.min.js"></script>
+  <!-- Client-side Pure JS Linear Regression Engine -->
+  <script src="regression_engine.js"></script>
 
   <!-- Modern Distinct Stylesheet -->
   <link rel="stylesheet" href="style.css">
@@ -45,25 +47,33 @@
         </div>
       </div>
 
-      <!-- 加分功能 1: 下拉視窗呈現兩種 Problem 與全景切換 -->
+      <!-- 加分功能 1: 下拉選單呈現兩種 Problem、Boston Housing 與全景切換 -->
       <div class="problem-dropdown-wrapper">
         <label for="problem-dropdown" class="dropdown-label"><i class="fa-solid fa-bullseye"></i> 題目切換：</label>
         <select id="problem-dropdown" class="styled-select">
-          <option value="part1">Problem 1: CRISP-DM 基準模型</option>
-          <option value="part2">Problem 2: 前向特徵選擇最佳化</option>
-          <option value="all" selected>兩題整合全景儀表板 (All-in-One)</option>
+          <option value="part1">主題一 (A)：50 Startups CRISP-DM 基準回歸</option>
+          <option value="part2">主題一 (B)：50 Startups 前向特徵選擇 (SFS)</option>
+          <option value="boston">主題二：Boston Housing 波士頓房價多元回歸</option>
+          <option value="custom">自訂資料集即時分析引擎 (Custom Dataset)</option>
+          <option value="all" selected>全景檢視：全部主題展開 (All-in-One)</option>
         </select>
       </div>
 
       <!-- Segmented Buttons Switcher (同步聯動) -->
       <div class="segmented-control" id="problem-switcher">
-        <button class="segmented-btn" data-target="part1">
-          <i class="fa-solid fa-square-root-variable"></i> Problem 1
+        <button class="segmented-btn" data-target="part1" title="50 Startups 基準">
+          <i class="fa-solid fa-square-root-variable"></i> Startups 基準
         </button>
-        <button class="segmented-btn" data-target="part2">
-          <i class="fa-solid fa-crosshairs"></i> Problem 2
+        <button class="segmented-btn" data-target="part2" title="前向特徵選擇">
+          <i class="fa-solid fa-crosshairs"></i> 特徵選擇
         </button>
-        <button class="segmented-btn active" data-target="all">
+        <button class="segmented-btn" data-target="boston" title="Boston Housing 房價回歸">
+          <i class="fa-solid fa-city"></i> Boston 房價
+        </button>
+        <button class="segmented-btn" data-target="custom" title="自訂資料集即時分析">
+          <i class="fa-solid fa-bolt"></i> 自訂分析
+        </button>
+        <button class="segmented-btn active" data-target="all" title="全部展開">
           <i class="fa-solid fa-layer-group"></i> 全景檢視
         </button>
       </div>
@@ -482,49 +492,268 @@
     </section>
 
     <!-- ====================================================================
-         加分功能 2: 自訂資料集即時載入與回歸引擎 (Custom Dataset Engine)
+         TOPIC 2: BOSTON HOUSING 波士頓房價多元線性回歸實證 (CRISP-DM Workflow)
          ==================================================================== -->
-    <section class="section-wrapper" id="custom-dataset">
+    <section class="section-wrapper problem-section" id="boston-section" style="display: block;">
       <div class="section-header">
         <div class="section-title-group">
-          <h2><i class="fa-solid fa-cloud-arrow-down" style="color: var(--cyan-primary);"></i> 加分功能：任意自訂資料集即時回歸引擎 (Custom Dataset Engine)</h2>
-          <p class="section-subtitle">支援輸入任意公開 CSV 網址（例如 GitHub RAW）或上傳本機檔案，即時於瀏覽器執行 OLS 模型訓練與評估</p>
+          <div class="stage-tag" style="background: rgba(139, 92, 246, 0.15); color: var(--violet-crisp); border: 1px solid rgba(139, 92, 246, 0.4);">
+            <i class="fa-solid fa-city"></i> Topic 2 (第二主題)
+          </div>
+          <h2>Boston Housing 波士頓房價多元線性回歸實證 (CRISP-DM 跨領域流程)</h2>
+          <p class="section-subtitle">
+            使用經典波士頓房價資料集 (506 筆真實樣本、13 項社區環境與房屋特徵)，以同一套標準化回歸工作流程求解住宅中位數價值 (MEDV) 最優超平面。
+          </p>
+        </div>
+        <div class="section-actions">
+          <a href="downloads/boston_housing_linear_regression_model.pkl.gz" download="boston_housing_model.pkl.gz" class="btn-outline">
+            <i class="fa-solid fa-download"></i> 下載 Boston 模型 (.pkl.gz)
+          </a>
+        </div>
+      </div>
+
+      <!-- Boston KPI Grid -->
+      <div class="kpi-grid">
+        <div class="kpi-card">
+          <span class="kpi-title">資料總筆數</span>
+          <div class="kpi-value" id="boston-row-count">506 筆</div>
+          <span class="kpi-footer">404 筆訓練集 / 102 筆測試集</span>
+        </div>
+        <div class="kpi-card highlight-optimal">
+          <span class="kpi-title">測試集 R² (決定係數)</span>
+          <div class="kpi-value" id="boston-r2">0.5892 (58.9%)</div>
+          <span class="kpi-footer">訓練集 Adjusted R²: 0.7291</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">測試集 RMSE (均方根誤差)</span>
+          <div class="kpi-value" id="boston-rmse">$5,783.50</div>
+          <span class="kpi-footer">房價單位：$5.784 (千美元)</span>
+        </div>
+        <div class="kpi-card">
+          <span class="kpi-title">測試集 MAE (平均絕對誤差)</span>
+          <div class="kpi-value" id="boston-mae">$3,191.60</div>
+          <span class="kpi-footer">平均預測絕對偏差</span>
+        </div>
+      </div>
+
+      <!-- Boston 回歸經驗方程式 -->
+      <div class="card" style="margin-top: 20px;">
+        <div class="math-formula-box">
+          <div class="formula-label"><i class="fa-solid fa-function"></i> Boston Housing 實測多元回歸經驗方程式：</div>
+          <div class="formula-latex" id="boston-formula-text">
+            <strong>MEDV</strong> = 39.7985 - 0.1194&times;(CRIM) + 0.0448&times;(ZN) - 0.0062&times;(INDUS) + 2.6867&times;(CHAS) - 16.5866&times;(NOX) + 3.8558&times;(RM) - 0.0098&times;(AGE) - 1.4758&times;(DIS) + 0.3057&times;(RAD) - 0.0123&times;(TAX) - 0.9527&times;(PTRATIO) + 0.0093&times;(B) - 0.5248&times;(LSTAT)
+          </div>
+        </div>
+
+        <!-- 關鍵特徵邊際效應解讀 -->
+        <div style="margin-top: 16px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 12px;">
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); font-size: 0.84rem;">
+            <strong style="color: var(--cyan-primary);">RM (房間數, &beta; = +3.8558):</strong> 住宅每多一間房間，預期房價大幅上漲約 $3,856 美元，為最具正向拉動力特徵。
+          </div>
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); font-size: 0.84rem;">
+            <strong style="color: var(--rose-danger);">NOX (空氣污染, &beta; = -16.5866):</strong> 一氧化氮濃度每上升 1 ppm，房價劇烈折損約 $16,587 美元，環境品質對高價住宅具關鍵懲罰效應。
+          </div>
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); font-size: 0.84rem;">
+            <strong style="color: var(--emerald-optimal);">CHAS (臨查爾斯河, &beta; = +2.6867):</strong> 臨河物業具備水岸景觀溢價，平均利多約 $2,687 美元。
+          </div>
+          <div style="background: rgba(255,255,255,0.03); border: 1px solid var(--border-subtle); padding: 12px; border-radius: var(--radius-sm); font-size: 0.84rem;">
+            <strong style="color: var(--amber-warning);">LSTAT (低地位比例, &beta; = -0.5248):</strong> 低收入群體比例每增加 1%，周邊住宅中位數價值折損約 $525 美元。
+          </div>
+        </div>
+
+        <!-- Boston 圖表展示 -->
+        <div style="margin-top: 24px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--text-bright);">
+              <i class="fa-solid fa-chart-scatter"></i> 測試集預測評估圖表 (Actual vs. Predicted / Residuals)
+            </h4>
+            <div class="segmented-control" id="boston-chart-toggle">
+              <button class="segmented-btn active" data-chart="actual_vs_pred">實際 vs 預測擬合圖</button>
+              <button class="segmented-btn" data-chart="residuals">殘差分佈圖</button>
+            </div>
+          </div>
+          <div style="position: relative; height: 350px; width: 100%;">
+            <canvas id="chart-boston"></canvas>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         加分功能 2: 真實可運作自訂資料集即時回歸引擎 (Custom Dataset Engine)
+         ==================================================================== -->
+    <section class="section-wrapper problem-section" id="custom-dataset-section" style="display: block;">
+      <div class="section-header">
+        <div class="section-title-group">
+          <div class="stage-tag" style="background: rgba(6, 182, 212, 0.15); color: var(--cyan-primary); border: 1px solid rgba(6, 182, 212, 0.4);">
+            <i class="fa-solid fa-microchip-ai"></i> Client-Side ML Engine
+          </div>
+          <h2>通用自訂資料集即時多元回歸實驗室 (Custom Dataset Interactive Engine)</h2>
+          <p class="section-subtitle">
+            真正於瀏覽器前端 (純 JavaScript) 執行 RFC 4180 CSV 解析、動態選擇 X/y、One-Hot 編碼、全主元正規方程 OLS 求解與指標計算。絕無寫死常數與假成功。
+          </p>
         </div>
       </div>
 
       <div class="card">
-        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px;">
-          <input type="text" id="custom-dataset-url" class="styled-input" style="flex: 1; min-width: 320px;" 
-                 value="https://raw.githubusercontent.com/Avik-Jain/100-Days-Of-ML-Code/master/datasets/50_Startups.csv" 
-                 placeholder="輸入 CSV 檔案公開網址...">
-          <button id="btn-fetch-custom-dataset" class="btn-primary">
-            <i class="fa-solid fa-bolt"></i> 載入並執行 OLS 分析
-          </button>
+        <!-- 來源輸入列 -->
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: stretch; margin-bottom: 14px;">
+          <div style="flex: 1; min-width: 300px; display: flex; gap: 8px;">
+            <input type="text" id="custom-dataset-url" class="styled-input" style="flex: 1;" 
+                   value="https://raw.githubusercontent.com/harimittapalli/Mulitple-Linear-Reggression/master/50_Startups.csv" 
+                   placeholder="請輸入公開 CSV 檔案網址 (支援 CORS 如 GitHub raw)...">
+            <button id="btn-fetch-custom-url" class="btn-primary" style="white-space: nowrap;">
+              <i class="fa-solid fa-cloud-arrow-down"></i> 載入網址
+            </button>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <label class="btn-outline" style="cursor: pointer; margin: 0; display: flex; align-items: center; gap: 6px;">
+              <i class="fa-solid fa-file-arrow-up"></i> 上傳本機 CSV
+              <input type="file" id="custom-file-input" accept=".csv" style="display: none;">
+            </label>
+          </div>
         </div>
 
-        <div id="custom-dataset-status" style="display: none; padding: 14px 18px; border-radius: var(--radius-md); margin-top: 12px;"></div>
+        <!-- 快速範例按鈕 -->
+        <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 16px; font-size: 0.82rem;">
+          <span style="color: var(--text-dim);"><i class="fa-solid fa-wand-magic-sparkles"></i> 快速帶入範例資料：</span>
+          <button class="btn-sm-preset" data-preset="50startups">50 Startups (初創企業利潤)</button>
+          <button class="btn-sm-preset" data-preset="boston">Boston Housing (波士頓房價)</button>
+          <button class="btn-sm-preset" data-preset="small">小樣本測試 (20 筆多特徵)</button>
+        </div>
 
-        <div id="custom-dataset-results" style="display: none; margin-top: 20px;">
-          <div class="kpi-grid">
-            <div class="kpi-card">
-              <span class="kpi-title">資料總筆數</span>
-              <div class="kpi-value" id="custom-row-count">50</div>
-              <span class="kpi-footer">完整讀取資料</span>
+        <!-- 狀態列 (明確狀態機) -->
+        <div id="custom-dataset-status" style="display: none; padding: 12px 16px; border-radius: var(--radius-sm); margin-bottom: 16px; font-size: 0.88rem;"></div>
+
+        <!-- 資料預覽與回歸配置面板 (資料載入成功後出現) -->
+        <div id="custom-config-panel" style="display: none; background: rgba(255,255,255,0.02); border: 1px solid var(--border-subtle); padding: 18px; border-radius: var(--radius-md); margin-bottom: 20px;">
+          <h4 style="font-size: 0.95rem; font-weight: 700; margin-bottom: 12px; color: var(--text-bright);">
+            <i class="fa-solid fa-sliders"></i> 資料品質檢視與回歸變數設定
+          </h4>
+
+          <!-- 資料統計摘要 -->
+          <div style="display: flex; gap: 16px; flex-wrap: wrap; font-size: 0.85rem; margin-bottom: 14px; color: var(--text-dim);">
+            <div>總有效列數：<strong id="cfg-row-count" style="color: var(--cyan-primary);">0</strong> 筆</div>
+            <div>總欄位數：<strong id="cfg-col-count" style="color: var(--cyan-primary);">0</strong> 個</div>
+            <div id="cfg-missing-warning" style="color: var(--amber-warning); display: none;"></div>
+          </div>
+
+          <!-- 前 5 筆預覽表格 -->
+          <div class="table-container" style="max-height: 180px; overflow-y: auto; margin-bottom: 16px;">
+            <table class="data-table" id="custom-preview-table" style="font-size: 0.8rem;">
+              <thead id="custom-preview-thead"></thead>
+              <tbody id="custom-preview-tbody"></tbody>
+            </table>
+          </div>
+
+          <!-- 變數配置區域 -->
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; align-items: start;">
+            <!-- 目標 y 下拉 -->
+            <div>
+              <label style="font-weight: 700; font-size: 0.85rem; display: block; margin-bottom: 6px;">
+                <i class="fa-solid fa-bullseye"></i> 選擇目標變數 y (Target, 須為數值)：
+              </label>
+              <select id="custom-target-select" class="styled-select" style="width: 100%;"></select>
             </div>
-            <div class="kpi-card highlight-optimal">
-              <span class="kpi-title">測試集 R² (決定係數)</span>
-              <div class="kpi-value" id="custom-r2">0.9347</div>
-              <span class="kpi-footer">模型擬合度</span>
-            </div>
-            <div class="kpi-card">
-              <span class="kpi-title">測試集 RMSE</span>
-              <div class="kpi-value" id="custom-rmse">$9,137.99</div>
-              <span class="kpi-footer">預測均方根誤差</span>
+
+            <!-- 切分參數 -->
+            <div style="display: flex; gap: 12px;">
+              <div style="flex: 1;">
+                <label style="font-weight: 700; font-size: 0.85rem; display: block; margin-bottom: 6px;">
+                  測試集比例 (test_size)：
+                </label>
+                <input type="number" id="custom-test-size" class="styled-input" value="0.2" min="0.1" max="0.5" step="0.05">
+              </div>
+              <div style="flex: 1;">
+                <label style="font-weight: 700; font-size: 0.85rem; display: block; margin-bottom: 6px;">
+                  隨機種子 (random_state)：
+                </label>
+                <input type="number" id="custom-random-state" class="styled-input" value="0" min="0" max="9999" step="1">
+              </div>
             </div>
           </div>
+
+          <!-- 特徵 X 複選清單 -->
+          <div style="margin-top: 14px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+              <label style="font-weight: 700; font-size: 0.85rem;">
+                <i class="fa-solid fa-list-check"></i> 選擇輸入特徵 X (可多選，類別自動進行 One-Hot 編碼)：
+              </label>
+              <div>
+                <button type="button" id="btn-select-all-features" style="background: none; border: none; color: var(--cyan-primary); cursor: pointer; font-size: 0.8rem; margin-right: 8px;">全選</button>
+                <button type="button" id="btn-clear-all-features" style="background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 0.8rem;">清除</button>
+              </div>
+            </div>
+            <div id="custom-features-container" style="display: flex; gap: 10px; flex-wrap: wrap; max-height: 140px; overflow-y: auto; padding: 8px; background: rgba(0,0,0,0.2); border-radius: var(--radius-sm);"></div>
+          </div>
+
+          <!-- 執行按鈕 -->
+          <div style="margin-top: 16px; text-align: right;">
+            <button id="btn-run-custom-training" class="btn-primary" style="padding: 10px 24px; font-weight: 700;">
+              <i class="fa-solid fa-play"></i> 執行純 JavaScript 線性回歸求解
+            </button>
+          </div>
+        </div>
+
+        <!-- 真正動態計算結果面板 (訓練完成後出現) -->
+        <div id="custom-dataset-results" style="display: none; margin-top: 20px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+            <h4 style="font-size: 0.95rem; font-weight: 700; color: var(--emerald-optimal);">
+              <i class="fa-solid fa-check-double"></i> 回歸求解完成！實測評估指標與經驗方程式
+            </h4>
+            <div style="display: flex; gap: 8px;">
+              <button id="btn-download-custom-csv" class="btn-outline" style="font-size: 0.8rem; padding: 4px 10px;">
+                <i class="fa-solid fa-file-csv"></i> 下載預測結果 (CSV)
+              </button>
+              <button id="btn-download-custom-json" class="btn-outline" style="font-size: 0.8rem; padding: 4px 10px;">
+                <i class="fa-solid fa-file-code"></i> 下載分析報告 (JSON)
+              </button>
+            </div>
+          </div>
+
+          <div class="kpi-grid">
+            <div class="kpi-card highlight-optimal">
+              <span class="kpi-title">測試集 R² (決定係數)</span>
+              <div class="kpi-value" id="custom-test-r2">-</div>
+              <span class="kpi-footer" id="custom-train-r2">訓練集 R²: -</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-title">測試集 RMSE (均方根誤差)</span>
+              <div class="kpi-value" id="custom-test-rmse">-</div>
+              <span class="kpi-footer" id="custom-train-rmse">訓練集 RMSE: -</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-title">測試集 MAE (平均絕對誤差)</span>
+              <div class="kpi-value" id="custom-test-mae">-</div>
+              <span class="kpi-footer">每筆平均絕對誤差</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-title">有效特徵與樣本劃分</span>
+              <div class="kpi-value" id="custom-sample-split">-</div>
+              <span class="kpi-footer" id="custom-adj-r2">校正 R²: -</span>
+            </div>
+          </div>
+
+          <!-- 真實求解經驗方程式 -->
           <div class="math-formula-box" style="margin-top: 16px;">
-            <div class="formula-label"><i class="fa-solid fa-function"></i> 自訂資料集即時求得之 OLS 方程式：</div>
-            <div class="formula-latex" id="custom-formula-text"></div>
+            <div class="formula-label"><i class="fa-solid fa-function"></i> 前端即時求解之多元回歸方程式：</div>
+            <div class="formula-latex" id="custom-formula-text" style="word-break: break-all;"></div>
+          </div>
+
+          <!-- 自訂圖表繪製 -->
+          <div style="margin-top: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 8px;">
+              <span style="font-weight: 700; font-size: 0.88rem; color: var(--text-bright);">
+                <i class="fa-solid fa-chart-line"></i> 預測擬合與殘差視覺化 (Chart.js 動態繪製)
+              </span>
+              <div class="segmented-control" id="custom-chart-toggle">
+                <button class="segmented-btn active" data-chart="actual_vs_pred">實際 vs 預測擬合圖</button>
+                <button class="segmented-btn" data-chart="residuals">殘差分佈圖</button>
+              </div>
+            </div>
+            <div style="position: relative; height: 320px; width: 100%;">
+              <canvas id="chart-custom-regression"></canvas>
+            </div>
           </div>
         </div>
       </div>
