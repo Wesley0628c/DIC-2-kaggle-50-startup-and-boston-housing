@@ -103,6 +103,42 @@ $$\text{Profit} = 42554.17 - 959.2842 \times \text{State\_Florida} + 699.3691 \t
 4. **未知類別容錯**：測試集或新輸入未見類別自動填補為 0（歸入基準類別），杜絕前端崩潰。
 5. **自由度防護檢驗**：切分後訓練樣本 $N_{\text{train}} \le P + 1$ 時明確回報錯誤，不輸出假正常結果。
 
+## 📸 實證成果與加分功能完整圖庫 (Screenshots Gallery)
+
+本專案所有核心成果與兩大加分功能之實證截圖，已全數歸檔於倉庫的 [`screenshots/`](screenshots/) 與 [`docs/screenshots/`](docs/screenshots/) 目錄中：
+
+### 1. Part 1: CRISP-DM 基準模型與評估圖表
+| 01. CRISP-DM 流程與基準回歸方程式 | 02. 係數表與 Actual vs. Pred 及殘差圖 |
+| :---: | :---: |
+| ![Part 1 基準模型](screenshots/01_Part1_CRISP_DM六階段流程與基準回歸模型.png) | ![Part 1 評估圖](screenshots/02_Part1_係數表與Actual_vs_Pred及殘差評估圖.png) |
+
+### 2. Part 2: 前向特徵選擇與奧卡姆剃刀谷地 (k=2)
+| 03. 前向特徵選擇控制台 (k=2 最優谷地) | 04. 特徵數 k 對 RMSE/R² 下凹曲線 |
+| :---: | :---: |
+| ![Part 2 控制台](screenshots/03_Part2_前向特徵選擇控制台_k2最優特徵組合.png) | ![Part 2 折線圖](screenshots/04_Part2_特徵數k對RMSE與R2趨勢圖.png) |
+
+| 05. 特徵選擇 1~5 步進程評估總表 | 06. Optuna 30 Trials 超參數調校歷程 |
+| :---: | :---: |
+| ![Part 2 總表](screenshots/05_Part2_特徵選擇漸進過程與評估指標總表.png) | ![Optuna 調校](screenshots/06_結果_Optuna超參數自動調校歷程與對比.png) |
+
+### 3. 主題二 Boston Housing 與課程統計指南
+| 07. 主題二 Boston Housing 房價成果 | 08. 課程統計評估核心指標指南 |
+| :---: | :---: |
+| ![Boston Housing](screenshots/07_結果_主題二_Boston_Housing波士頓房價成果.png) | ![課程統計指南](screenshots/08_結果_課程統計核心指標與評估指南.png) |
+
+### 4. 🌟 加分項目實證（加總分 1分 & 2分）與自動化測試憑證
+| 【加總分 1分】下拉選單呈現兩種 Problem 特寫 | 【加總分 1分】下拉切換至主題二 Boston 成果 |
+| :---: | :---: |
+| ![加分1分 下拉選單](screenshots/加分1分_01_下拉選單展開兩種Problem特寫.png) | ![加分1分 切換Boston](screenshots/加分1分_02_下拉切換至主題二_Boston_Housing成果.png) |
+
+| 【加總分 2分】任意輸入 Dataset 網址成功解析 | 【加總分 2分】純 JS 即時回歸求解指標與圖表 |
+| :---: | :---: |
+| ![加分2分 網址讀取](screenshots/加分2分_01_任意輸入Dataset網址成功解析與變數設定.png) | ![加分2分 求解成果](screenshots/加分2分_02_自訂資料集即時回歸求解指標與圖表成果.png) |
+
+| 【全專案檢驗】19 項自動化測試全數 100% 通過憑證 |
+| :---: |
+| ![測試通過憑證](screenshots/09_驗證_全套19項自動化測試通過紀錄.png) |
+
 ---
 
 ## 📂 專案目錄結構
@@ -111,17 +147,14 @@ $$\text{Profit} = 42554.17 - 959.2842 \times \text{State\_Florida} + 699.3691 \t
 DIC Multiple Linear Regression/
 ├── index.html               # 專案首頁 (GitHub Pages 部署根目錄)
 ├── docs/                    # GitHub Pages /docs 部署目錄
-├── web/                     # 實證視覺化前端
-│   ├── index.html           # Aether Quant Lab 互動儀表板
-│   ├── style.css            # 獨立現代幾何科技感樣式系統
-│   ├── app.js               # 前端互動控制器 (五視角切換、圖表渲染、試算器)
+│   ├── screenshots/         # 部署於靜態網站之全套高清截圖
+│   └── downloads/           # PKL.GZ 模型檔、CSV 與 Notebook
+├── screenshots/             # 存放於 GitHub 倉庫之實證與加分項目截圖 (14 張)
+├── web/                     # 實證視覺化前端 (Aether Quant Lab)
 │   ├── regression_engine.js # 純前端瀏覽器端線性回歸求解器 (RFC 4180 CSV + OLS)
-│   ├── chart.umd.min.js     # 本地 Chart.js 核心庫
 │   ├── data.json            # 完整真實計算結構化 JSON
-│   ├── default_data.js      # 離線回退內嵌資料集
-│   └── downloads/           # PKL.GZ 模型檔、CSV 預測明細與 Jupyter Notebook
+│   └── app.js               # 前端互動控制器 (視角切換、圖表渲染、試算器)
 ├── src/                     # Python 核心實作原始碼
-│   ├── download_data.py     # 資料獲取與品質完整性檢核
 │   ├── part1_crispdm.py     # Part 1 CRISP-DM 六階段回歸基準
 │   ├── part2_forward_selection.py # Part 2 前向選擇 (5-Fold CV)
 │   ├── benchmark_algorithms.py   # 五大特徵選擇演算法與 31 組窮舉實測
@@ -132,9 +165,6 @@ DIC Multiple Linear Regression/
 ├── data/                    # 原始數據集 (50_Startups.csv, BostonHousing.csv)
 ├── outputs/                 # 序列化模型與評估報告產出
 ├── tests/                   # 自動化測試套件 (19 項單元測試全數通過)
-│   ├── test_pipeline.py     # 後端數值、模型推論與前向選擇測試 (15 項)
-│   ├── test_web_integration.py # 前端 DOM、自訂回歸與無假指標測試 (4 項)
-│   └── test_js_engine.js    # Node.js 端 RegressionEngine 單元測試
 ├── 50_Startup_Multiple_Linear_Regression_CRISP_DM.ipynb # 真實執行的 Jupyter Notebook
 ├── results.md               # 完整成果報告與統計檢定紀錄
 ├── RunLog.md                # 實作執行歷程記錄
