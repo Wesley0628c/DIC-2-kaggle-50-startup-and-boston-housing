@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="zh-TW" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Aether Quant Lab | 50 Startups Multiple Linear Regression & Feature Selection</title>
+  <meta name="description" content="50 Startups 多元線性回歸分析與特徵選擇實證研究室：CRISP-DM 完整規範、前向特徵選擇 (Forward Selection)、奧卡姆剃刀最優谷地 (Valley at k=2) 與五大演算法橫向比對。">
+  
+  <!-- Modern Geometric Typography: Outfit, Inter, Fira Code -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500;600&family=Inter:wght@300;400;500;600;700&family=Outfit:wght@500;600;700;800;900&display=swap" rel="stylesheet">
+  
+  <!-- FontAwesome Icons -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  
+  <!-- Local Chart.js Library -->
+  <script src="chart.umd.min.js"></script>
+
+  <!-- Modern Distinct Stylesheet -->
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+  <!-- Ambient Glowing Background Orbs -->
+  <div class="ambient-glow-wrapper">
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+    <div class="ambient-orb orb-3"></div>
+  </div>
+
+  <!-- Floating Navigation Bar -->
+  <header class="site-header">
+    <div class="header-glass">
+      <div class="brand-section">
+        <div class="brand-icon">
+          <i class="fa-solid fa-chart-network"></i>
+        </div>
+        <div class="brand-text">
+          <h1>Aether Quant Lab</h1>
+          <div class="status-badge">
+            <span class="pulse-dot"></span>
+            CRISP-DM OLS ENGINE ONLINE
+          </div>
+        </div>
+      </div>
+
+      <!-- Segmented Control for Problem Switcher (加分功能 1) -->
+      <div class="segmented-control" id="problem-switcher">
+        <button class="segmented-btn" data-target="part1">
+          <i class="fa-solid fa-square-root-variable"></i> Problem 1: 基準模型
+        </button>
+        <button class="segmented-btn active" data-target="part2">
+          <i class="fa-solid fa-crosshairs"></i> Problem 2: 前向特徵選擇
+        </button>
+        <button class="segmented-btn" data-target="all">
+          <i class="fa-solid fa-layer-group"></i> 全景儀表板
+        </button>
+      </div>
+
+      <div class="header-actions">
+        <!-- Theme Toggle (Dark/Light) -->
+        <button id="theme-toggle-btn" class="btn-icon-action" title="切換深淺色主題">
+          <i class="fa-solid fa-sun"></i>
+        </button>
+        <!-- GitHub Repo Link -->
+        <a href="https://github.com/Wesley0628c/DIC-2-kaggle-50-startup-and-boston-housing" target="_blank" class="btn-icon-action" title="檢視 GitHub 原始碼">
+          <i class="fa-brands fa-github"></i>
+        </a>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+
+    <!-- Hero Analytics Banner -->
+    <section class="hero-analytics" id="overview">
+      <div class="hero-top-badge">
+        <i class="fa-solid fa-atom"></i> Empirical Data Science Research
+      </div>
+      <h2 class="hero-title">
+        50 Startups <span class="gradient-text">多元線性回歸與前向特徵選擇</span>
+      </h2>
+      <p class="hero-description">
+        本研究室嚴格落實 CRISP-DM 六大標準階段與 Ordinary Least Squares (OLS) 求解。針對 50 家初創企業之研發、行政與行銷支出及註冊州別，構建多元回歸基準，並透過自建前向特徵選擇 (Forward SFS) 及跨演算法橫向比對，實證驗證奧卡姆剃刀 (Occam's Razor) 在 <span style="color: var(--emerald-optimal); font-weight: 700;">k = 2</span> 產生之最低測試集均方根誤差谷地 ($8,198.80)。
+      </p>
+
+      <div class="hero-metrics-bar">
+        <div class="hero-metric-item">
+          <div class="hero-metric-icon"><i class="fa-solid fa-database"></i></div>
+          <div>
+            <div class="hero-metric-val">50 筆</div>
+            <div class="hero-metric-lbl">嚴格無缺失驗證樣本</div>
+          </div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-icon"><i class="fa-solid fa-chart-line-up" style="color: var(--emerald-optimal);"></i></div>
+          <div>
+            <div class="hero-metric-val" style="color: var(--emerald-optimal);">0.9474 (94.7%)</div>
+            <div class="hero-metric-lbl">最優測試集 R² (k=2)</div>
+          </div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-icon"><i class="fa-solid fa-badge-percent" style="color: #38bdf8;"></i></div>
+          <div>
+            <div class="hero-metric-val" style="color: #38bdf8;">$8,198.80</div>
+            <div class="hero-metric-lbl">奧卡姆剃刀最優 RMSE (-10.3%)</div>
+          </div>
+        </div>
+        <div class="hero-metric-item">
+          <div class="hero-metric-icon"><i class="fa-solid fa-compass-drafting"></i></div>
+          <div>
+            <div class="hero-metric-val">California</div>
+            <div class="hero-metric-lbl">基準州 (Reference State)</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         PROBLEM 2: FEATURE PROGRESSION & OCCAM'S RAZOR VALLEY AT K=2
+         ==================================================================== -->
+    <section class="section-wrapper" id="part2">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2><i class="fa-solid fa-crosshairs" style="color: var(--emerald-optimal);"></i> Part 2: 前向特徵選擇與奧卡姆剃刀谷地 (Valley at k=2)</h2>
+          <p class="section-subtitle">探討模型複雜度（特徵數量 k）與泛化能力（測試集 RMSE / R²）之平衡點</p>
+        </div>
+        <div class="view-toggle-bar">
+          <button class="view-toggle-btn active" id="btn-view-interactive">
+            <i class="fa-solid fa-chart-line"></i> 互動動態圖表
+          </button>
+          <button class="view-toggle-btn" id="btn-view-python-p2">
+            <i class="fa-solid fa-image"></i> Python 原生高清圖 (300 DPI)
+          </button>
+        </div>
+      </div>
+
+      <!-- 奧卡姆剃刀谷地焦點橫幅 (Occam's Razor Valley Focus Banner) -->
+      <div class="valley-hero-banner">
+        <div class="valley-banner-left">
+          <div class="valley-badge-icon">
+            <i class="fa-solid fa-star"></i>
+          </div>
+          <div>
+            <div class="valley-title">
+              Occam's Razor 最優谷地 (Valley at k=2) 實證確認
+            </div>
+            <div class="valley-desc" id="valley-desc-text">
+              當特徵從 k=1 (R&D Spend) 增加至 k=2 (+Marketing Spend) 時，測試集 RMSE 由 $8,274.87 下降至 <strong style="color: var(--emerald-optimal);">$8,198.80</strong> (形成全域最低點谷地)。後續加入行政支出或州別虛擬變數時，因引入雜訊導致模型過度擬合 (Overfitting)，RMSE 反向飆升至 $9,137.99。
+            </div>
+          </div>
+        </div>
+        <div class="valley-stat-pill">
+          <i class="fa-solid fa-arrow-trend-down"></i> 最低測試 RMSE: $8,198.80
+        </div>
+      </div>
+
+      <!-- 5 種演算法橫向對比切換導航 -->
+      <div class="algorithm-nav" id="algo-tabs">
+        <button class="algo-pill active" data-algo="Forward SFS (Lecture Stepwise)">
+          <i class="fa-solid fa-forward-step"></i> 講義標準 SFS (明顯下凹山谷)
+        </button>
+        <button class="algo-pill" data-algo="Forward SFS">
+          <i class="fa-solid fa-bullseye"></i> 純 Test RMSE 貪婪 SFS
+        </button>
+        <button class="algo-pill" data-algo="Lasso (L1)">
+          <i class="fa-solid fa-tag"></i> Lasso (L1 正則排序)
+        </button>
+        <button class="algo-pill" data-algo="RFE">
+          <i class="fa-solid fa-scissors"></i> RFE (遞迴特徵消除)
+        </button>
+        <button class="algo-pill" data-algo="ElasticNet">
+          <i class="fa-solid fa-circle-nodes"></i> ElasticNet (彈性網絡)
+        </button>
+        <button class="algo-pill" data-algo="Exhaustive">
+          <i class="fa-solid fa-magnifying-glass-chart"></i> Exhaustive (全子集窮舉)
+        </button>
+        <button class="algo-pill compare-all" data-algo="COMPARE_ALL">
+          <i class="fa-solid fa-chart-line-up"></i> 📊 五大方法同台對比 (Compare All 5)
+        </button>
+      </div>
+
+      <!-- 特徵階梯步數按鈕 (k=1 ~ k=5) -->
+      <div class="k-stepper" id="k-steps-selector">
+        <button class="k-step-btn" data-k="1">
+          <span>k = 1</span> <small style="color: var(--text-dim);">R&D Spend</small>
+        </button>
+        <button class="k-step-btn optimal-sweet active" data-k="2">
+          <i class="fa-solid fa-crown" style="color: #f59e0b;"></i>
+          <span>k = 2</span> <strong>⭐ 最優谷地: +Marketing</strong>
+        </button>
+        <button class="k-step-btn" data-k="3">
+          <span>k = 3</span> <small style="color: var(--text-dim);" id="k3-label">+Administration</small>
+        </button>
+        <button class="k-step-btn" data-k="4">
+          <span>k = 4</span> <small style="color: var(--text-dim);" id="k4-label">+State_New York</small>
+        </button>
+        <button class="k-step-btn" data-k="5">
+          <span>k = 5</span> <small style="color: var(--text-dim);">全特徵 (等同基準模型)</small>
+        </button>
+      </div>
+
+      <!-- 5 大核心 KPI 卡片 -->
+      <div class="kpi-grid">
+        <div class="kpi-card highlight-optimal" id="card-kpi-rmse">
+          <div class="kpi-card-header">
+            <span class="kpi-title">Test RMSE (測試集均方根誤差)</span>
+            <span class="badge-tag tag-sweet" id="badge-kpi-rmse">谷地最低點 (Optimal)</span>
+          </div>
+          <div class="kpi-value" id="val-kpi-rmse">$8,198.80</div>
+          <div class="kpi-footer">
+            <i class="fa-solid fa-arrow-down" style="color: var(--emerald-optimal);"></i>
+            <span>越低越好；較全特徵模型改善 <strong>-10.3%</strong></span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-title">Test R² (測試集決定係數)</span>
+            <span class="badge-tag tag-info" id="badge-kpi-r2">94.7% FIT</span>
+          </div>
+          <div class="kpi-value" id="val-kpi-r2">0.9474</div>
+          <div class="kpi-footer">
+            <i class="fa-solid fa-circle-check" style="color: var(--cyan-primary);"></i>
+            <span>解釋利潤 94.74% 之變異量</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-title">Adjusted R² (校正決定係數)</span>
+            <span class="badge-tag tag-neutral">懲罰多餘特徵</span>
+          </div>
+          <div class="kpi-value" id="val-kpi-adjr2">0.9324</div>
+          <div class="kpi-footer">
+            <i class="fa-solid fa-scale-balanced"></i>
+            <span>防止模型過度參數化 (Overfitting)</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-title">Mean Absolute Error (MAE)</span>
+            <span class="badge-tag tag-neutral">平均絕對誤差</span>
+          </div>
+          <div class="kpi-value" id="val-kpi-mae">$6,886.59</div>
+          <div class="kpi-footer">
+            <i class="fa-solid fa-calculator"></i>
+            <span>測試樣本平均每筆誤差相差約 $6,886 美元</span>
+          </div>
+        </div>
+
+        <div class="kpi-card">
+          <div class="kpi-card-header">
+            <span class="kpi-title">F-Statistic (整體顯著性)</span>
+            <span class="badge-tag tag-sweet">p &lt; 0.0001</span>
+          </div>
+          <div class="kpi-value" id="val-kpi-fstat">349.04</div>
+          <div class="kpi-footer">
+            <i class="fa-solid fa-chart-simple" style="color: var(--emerald-optimal);"></i>
+            <span>拒絕無效假設，模型具極高統計顯著性</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- 並排雙趨勢圖 (動態向量 Chart.js Canvas) -->
+      <div id="p2-interactive-charts" class="charts-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3><i class="fa-solid fa-arrow-trend-down" style="color: #f97316;"></i> Test RMSE by Feature Count (k)</h3>
+              <p class="card-subtitle">清晰呈現 k=2 谷地下凹形狀 (Lower is Better)</p>
+            </div>
+            <span class="badge-tag tag-sweet" id="rmse-chart-badge">Valley at k=2</span>
+          </div>
+          <div class="chart-container-box">
+            <canvas id="chart-rmse"></canvas>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3><i class="fa-solid fa-arrow-trend-up" style="color: var(--emerald-optimal);"></i> Test R² by Feature Count (k)</h3>
+              <p class="card-subtitle">於 k=2 達到峰值，後續特徵無法顯著增加解釋力 (Higher is Better)</p>
+            </div>
+            <span class="badge-tag tag-sweet">Peak at k=2</span>
+          </div>
+          <div class="chart-container-box">
+            <canvas id="chart-r2"></canvas>
+          </div>
+        </div>
+      </div>
+
+      <!-- Python 原生繪圖靜態圖容器 (預設隱藏，點擊按鈕切換) -->
+      <div id="p2-python-static-container" class="card" style="display: none; margin-bottom: 24px; text-align: center;">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h3><i class="fa-brands fa-python" style="color: #38bdf8;"></i> Python Matplotlib 原生輸出成果圖 (part2_features_trend.png)</h3>
+            <p class="card-subtitle">直接讀取本機輸出之高解析度 (300 DPI) 繪圖成果</p>
+          </div>
+          <a href="images/part2_features_trend.png" target="_blank" class="badge-tag tag-info">開啟大圖 <i class="fa-solid fa-arrow-up-right-from-square"></i></a>
+        </div>
+        <img src="images/part2_features_trend.png" alt="Part 2 Feature Trend" style="max-width: 100%; border-radius: 8px; box-shadow: var(--shadow-md);">
+      </div>
+
+      <!-- 1~5 特徵漸進比較總表 -->
+      <div class="card">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h3><i class="fa-solid fa-table-list"></i> 特徵選擇漸進過程與評估指標總表</h3>
+            <p class="card-subtitle">記錄各階段納入特徵、測試誤差與訓練誤差變遷</p>
+          </div>
+        </div>
+        <div class="table-responsive">
+          <table class="styled-table" id="p2-summary-table">
+            <thead>
+              <tr>
+                <th>特徵數 (k)</th>
+                <th>新納入特徵</th>
+                <th>當前特徵子集</th>
+                <th class="num-cell">測試集 RMSE</th>
+                <th class="num-cell">測試集 R²</th>
+                <th class="num-cell">訓練集 RMSE</th>
+                <th class="num-cell">訓練集 R²</th>
+                <th>模型狀態判定</th>
+              </tr>
+            </thead>
+            <tbody id="p2-summary-tbody">
+              <!-- Dynamically populated by app.js -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         PROBLEM 1: CRISP-DM BASELINE MULTIPLE LINEAR REGRESSION
+         ==================================================================== -->
+    <section class="section-wrapper" id="part1">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2><i class="fa-solid fa-square-root-variable" style="color: var(--cyan-primary);"></i> Problem 1: CRISP-DM 多元線性回歸基準模型</h2>
+          <p class="section-subtitle">納入全部 5 個編碼特徵（基準州 California），以 Ordinary Least Squares 求解最優平面</p>
+        </div>
+        <div class="view-toggle-bar" id="p1-chart-toggle-group">
+          <button class="view-toggle-btn active" data-chart="actual_vs_pred">實際 vs 預測</button>
+          <button class="view-toggle-btn" data-chart="residual">殘差分佈</button>
+          <button class="view-toggle-btn" data-chart="python_img">Python 原圖</button>
+        </div>
+      </div>
+
+      <!-- CRISP-DM 6 階段流程卡片 Grid -->
+      <div class="crisp-stepper-grid" id="crisp-container">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <!-- 實測多元回歸方程式卡片 -->
+      <div class="math-formula-box">
+        <div class="formula-label">
+          <i class="fa-solid fa-function"></i> 📐 實測多元線性回歸方程式 (Empirical Regression Formula)
+        </div>
+        <div class="formula-latex">
+          <strong>Profit</strong> = 42554.17 - 959.2842 &times; (State_Florida) + 699.3691 &times; (State_New York) + <span class="formula-highlight">0.7735</span> &times; (R&D Spend) + 0.0329 &times; (Administration) + 0.0366 &times; (Marketing Spend)
+        </div>
+        <div class="formula-notes">
+          <i class="fa-solid fa-circle-info" style="color: var(--cyan-primary);"></i> 
+          <strong>基準州（Reference State）：</strong> California (加州)。當企業位於 Florida 時，State_Florida = 1；位於 New York 時，State_New York = 1；若均為 0 則代表 California。
+        </div>
+      </div>
+
+      <!-- 回歸指標與評估圖並排 Grid -->
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3><i class="fa-solid fa-chart-column"></i> 特徵迴歸係數分析 (Regression Coefficients)</h3>
+              <p class="card-subtitle">檢視各特徵之估計係數與邊際經濟影響</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>特徵名稱</th>
+                  <th class="num-cell">係數估計值</th>
+                  <th>經濟解釋與邊際影響</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>Intercept (截距)</code></td>
+                  <td class="num-cell" style="font-weight: 700;">+42,554.17</td>
+                  <td style="color: var(--text-muted); font-size: 0.82rem;">位於 California 且三項支出皆為零時之基準利潤估計值</td>
+                </tr>
+                <tr>
+                  <td><code>State_Florida</code></td>
+                  <td class="num-cell" style="color: #f43f5e; font-weight: 700;">-959.28</td>
+                  <td style="color: var(--text-muted); font-size: 0.82rem;">相較 California 企業，Florida 企業平均獲利微幅少約 $959 美元（無統計顯著差異）</td>
+                </tr>
+                <tr>
+                  <td><code>State_New York</code></td>
+                  <td class="num-cell" style="color: var(--cyan-primary); font-weight: 700;">+699.37</td>
+                  <td style="color: var(--text-muted); font-size: 0.82rem;">相較 California 企業，New York 企業平均獲利微幅多約 $699 美元（無統計顯著差異）</td>
+                </tr>
+                <tr>
+                  <td><code>R&D Spend</code></td>
+                  <td class="num-cell" style="color: var(--emerald-optimal); font-weight: 800;">+0.7735</td>
+                  <td style="color: var(--emerald-optimal); font-size: 0.82rem; font-weight: 600;">每增加 1 美元研發投入，利潤預期增加 $0.77 美元（全模型最關鍵正向獲利驅動引擎）</td>
+                </tr>
+                <tr>
+                  <td><code>Administration</code></td>
+                  <td class="num-cell" style="color: var(--text-dim); font-weight: 700;">+0.0329</td>
+                  <td style="color: var(--text-muted); font-size: 0.82rem;">每增加 1 美元行政管理支出，利潤僅微幅變動 $0.03 美元（統計上不具顯著邊際貢獻）</td>
+                </tr>
+                <tr>
+                  <td><code>Marketing Spend</code></td>
+                  <td class="num-cell" style="color: var(--cyan-primary); font-weight: 700;">+0.0366</td>
+                  <td style="color: var(--text-muted); font-size: 0.82rem;">每增加 1 美元行銷推廣支出，利潤預期提升約 $0.04 美元（具穩定輔助成長效果）</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3><i class="fa-solid fa-chart-scatter"></i> Actual vs. Predicted 與 殘差分析</h3>
+              <p class="card-subtitle">檢驗模型擬合優度與殘差隨機分佈假設</p>
+            </div>
+          </div>
+          <div class="chart-container-box">
+            <canvas id="chart-p1-eval"></canvas>
+            <img id="p1-python-img" src="images/part1_evaluation_plots.png" alt="Python Evaluation Plot" 
+                 style="display: none; width: 100%; height: 100%; object-fit: contain; border-radius: 8px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Part 1 測試集 10 筆逐筆預測明細 -->
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h3><i class="fa-solid fa-list-check"></i> Part 1 測試集 10 筆逐筆預測明細 (Test Predictions Breakdown)</h3>
+            <p class="card-subtitle">嚴格按照 random_state=0 切分之 10 筆測試樣本實際獲利與 OLS 預測獲利比對</p>
+          </div>
+          <span class="badge-tag tag-info">10 Test Samples</span>
+        </div>
+        <div class="table-responsive">
+          <table class="styled-table" id="p1-test-table">
+            <thead>
+              <tr>
+                <th>原始 ID</th>
+                <th>所在州</th>
+                <th class="num-cell">研發支出</th>
+                <th class="num-cell">行政支出</th>
+                <th class="num-cell">行銷支出</th>
+                <th class="num-cell">實際獲利 ($)</th>
+                <th class="num-cell">預測獲利 ($)</th>
+                <th class="num-cell">殘差 ($) [實際-預測]</th>
+                <th class="num-cell">絕對誤差 ($)</th>
+              </tr>
+            </thead>
+            <tbody id="p1-test-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         INTERACTIVE REAL-TIME REGRESSION SIMULATOR (即時推論與預測引擎)
+         ==================================================================== -->
+    <section class="section-wrapper" id="simulator">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2><i class="fa-solid fa-sliders" style="color: var(--cyan-primary);"></i> 互動回歸推論試算與預測實驗室 (Interactive Predictor)</h2>
+          <p class="section-subtitle">即時調節初創企業之各項支出金額與註冊州別，觀察 OLS 模型與奧卡姆剃刀模型的獲利推論</p>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="simulator-layout">
+          <div class="simulator-controls">
+            <!-- R&D Spend Slider -->
+            <div class="control-slider-group">
+              <div class="slider-label-row">
+                <span><strong>研發支出 (R&D Spend):</strong></span>
+                <span class="slider-val-badge" id="lbl-sim-rd">$100,000</span>
+              </div>
+              <input type="range" min="0" max="200000" step="1000" value="100000" class="styled-slider" id="slider-sim-rd">
+            </div>
+
+            <!-- Administration Slider -->
+            <div class="control-slider-group">
+              <div class="slider-label-row">
+                <span><strong>行政管理支出 (Administration):</strong></span>
+                <span class="slider-val-badge" id="lbl-sim-admin">$120,000</span>
+              </div>
+              <input type="range" min="50000" max="200000" step="1000" value="120000" class="styled-slider" id="slider-sim-admin">
+            </div>
+
+            <!-- Marketing Spend Slider -->
+            <div class="control-slider-group">
+              <div class="slider-label-row">
+                <span><strong>行銷推廣支出 (Marketing Spend):</strong></span>
+                <span class="slider-val-badge" id="lbl-sim-marketing">$250,000</span>
+              </div>
+              <input type="range" min="0" max="500000" step="2500" value="250000" class="styled-slider" id="slider-sim-marketing">
+            </div>
+
+            <!-- State Selector -->
+            <div style="margin-top: 20px;">
+              <label style="font-weight: 700; font-size: 0.88rem; display: block; margin-bottom: 8px;">企業註冊州別 (State):</label>
+              <div style="display: flex; gap: 12px;">
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="radio" name="sim-state" value="California" checked> California (基準州)
+                </label>
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="radio" name="sim-state" value="Florida"> Florida (-$959.28)
+                </label>
+                <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                  <input type="radio" name="sim-state" value="New York"> New York (+$699.37)
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <div class="predict-result-card">
+            <span style="font-size: 0.82rem; text-transform: uppercase; font-weight: 700; letter-spacing: 0.05em; color: var(--cyan-primary);">
+              預測企業利潤 (Predicted Profit)
+            </span>
+            <div class="result-profit-val" id="sim-predicted-profit">$133,000.00</div>
+            <p style="font-size: 0.82rem; color: var(--text-dim); max-width: 280px; margin-top: 8px;">
+              依據 OLS 實測回歸方程式即時計算；研發支出每增加 $10,000，獲利即時提升約 $7,735 美元。
+            </p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         ACADEMIC & EMPIRICAL DISCUSSION SECTION
+         ==================================================================== -->
+    <section class="section-wrapper" id="discussion">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2><i class="fa-solid fa-graduation-cap" style="color: var(--violet-crisp);"></i> 課堂實證總結與商業啟示 (Empirical Discussion)</h2>
+          <p class="section-subtitle">針對回歸分析之核心洞見、變異數膨脹因子 (VIF) 與模型評估指標深入探討</p>
+        </div>
+      </div>
+
+      <div class="grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;" id="insights-container">
+        <!-- Dynamically rendered -->
+      </div>
+    </section>
+
+    <!-- ====================================================================
+         DOWNLOADS & ARTIFACTS
+         ==================================================================== -->
+    <section class="section-wrapper" id="downloads">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2><i class="fa-solid fa-box-archive" style="color: var(--amber-warning);"></i> 專案產出物與模型下載 (Downloads & Artifacts)</h2>
+          <p class="section-subtitle">包含完整 Python 模型 PKL 檔、CSV 預測結果、JSON 數據與學術報告</p>
+        </div>
+      </div>
+
+      <div class="download-grid">
+        <a href="downloads/part1_linear_regression_model.pkl.gz" download="part1_linear_regression_model.pkl.gz" class="download-box">
+          <div class="download-icon"><i class="fa-solid fa-box"></i></div>
+          <div>
+            <div class="download-name">Part 1 基準模型 (PKL.GZ)</div>
+            <div class="download-meta">Scikit-Learn OLS 序列化模型</div>
+          </div>
+        </a>
+
+        <a href="downloads/part2_forward_selection_models.pkl.gz" download="part2_forward_selection_models.pkl.gz" class="download-box">
+          <div class="download-icon" style="color: var(--emerald-optimal);"><i class="fa-solid fa-cubes"></i></div>
+          <div>
+            <div class="download-name">Part 2 前向選擇模型 (PKL.GZ)</div>
+            <div class="download-meta">1~5 特徵步進模型集合</div>
+          </div>
+        </a>
+
+        <a href="downloads/part1_test_predictions.csv" download="part1_test_predictions.csv" class="download-box">
+          <div class="download-icon" style="color: #38bdf8;"><i class="fa-solid fa-file-csv"></i></div>
+          <div>
+            <div class="download-name">Part 1 測試預測 (CSV)</div>
+            <div class="download-meta">10 筆樣本實際 vs 預測明細</div>
+          </div>
+        </a>
+
+        <a href="downloads/part2_forward_selection_summary.csv" download="part2_forward_selection_summary.csv" class="download-box">
+          <div class="download-icon" style="color: var(--amber-warning);"><i class="fa-solid fa-table"></i></div>
+          <div>
+            <div class="download-name">Part 2 步進總表 (CSV)</div>
+            <div class="download-meta">特徵子集與 RMSE/R² 數據</div>
+          </div>
+        </a>
+
+        <a href="data.json" download="50_startups_results.json" class="download-box">
+          <div class="download-icon" style="color: var(--rose-danger);"><i class="fa-solid fa-code"></i></div>
+          <div>
+            <div class="download-name">結構化數據 (JSON)</div>
+            <div class="download-meta">全域數值與 5 大演算法 Benchmark</div>
+          </div>
+        </a>
+
+        <a href="downloads/results.md" download="results.md" class="download-box">
+          <div class="download-icon" style="color: var(--violet-crisp);"><i class="fa-solid fa-file-lines"></i></div>
+          <div>
+            <div class="download-name">成果分析報告 (Markdown)</div>
+            <div class="download-meta">完整學術與商業總結文件</div>
+          </div>
+        </a>
+      </div>
+    </section>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p><strong>Aether Quant Lab | 50 Startups: Multiple Linear Regression & Feature Selection Explorer</strong></p>
+      <p style="margin-top: 6px;">遵循 CRISP-DM 課堂規範實作 (test_size=0.2, random_state=0) | 奧卡姆剃刀實證研究</p>
+      <p style="margin-top: 8px;">
+        GitHub Pages 公開網址：<a href="https://wesley0628c.github.io/DIC-2-kaggle-50-startup-and-boston-housing/" target="_blank">https://wesley0628c.github.io/DIC-2-kaggle-50-startup-and-boston-housing/</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Embedded Real Computed Data (Offline & Local File Fallback) -->
+  <script src="default_data.js"></script>
+  <!-- Core Modern Application Logic -->
+  <script src="app.js"></script>
+</body>
+</html>

@@ -1,0 +1,362 @@
+{
+  "1": [
+    {
+      "original_id": 2,
+      "actual_profit": 191050.39,
+      "predicted_profit": 179090.58602508352,
+      "residual": 11959.80397491649,
+      "abs_error": 11959.80397491649
+    },
+    {
+      "original_id": 4,
+      "actual_profit": 166187.94,
+      "predicted_profit": 169438.148435391,
+      "residual": -3250.2084353909886,
+      "abs_error": 3250.2084353909886
+    },
+    {
+      "original_id": 10,
+      "actual_profit": 146121.95,
+      "predicted_profit": 135207.80019516923,
+      "residual": 10914.149804830784,
+      "abs_error": 10914.149804830784
+    },
+    {
+      "original_id": 11,
+      "actual_profit": 144259.4,
+      "predicted_profit": 134150.8341057847,
+      "residual": 10108.56589421528,
+      "abs_error": 10108.56589421528
+    },
+    {
+      "original_id": 22,
+      "actual_profit": 110352.25,
+      "predicted_profit": 111431.75202432103,
+      "residual": -1079.502024321031,
+      "abs_error": 1079.502024321031
+    },
+    {
+      "original_id": 27,
+      "actual_profit": 105008.31,
+      "predicted_profit": 109824.77386586336,
+      "residual": -4816.463865863363,
+      "abs_error": 4816.463865863363
+    },
+    {
+      "original_id": 28,
+      "actual_profit": 103282.38,
+      "predicted_profit": 104667.27805997859,
+      "residual": -1384.8980599785864,
+      "abs_error": 1384.8980599785864
+    },
+    {
+      "original_id": 31,
+      "actual_profit": 97483.56,
+      "predicted_profit": 100481.43277138655,
+      "residual": -2997.872771386552,
+      "abs_error": 2997.872771386552
+    },
+    {
+      "original_id": 38,
+      "actual_profit": 81229.06,
+      "predicted_profit": 65644.27773756774,
+      "residual": 15584.782262432258,
+      "abs_error": 15584.782262432258
+    },
+    {
+      "original_id": 41,
+      "actual_profit": 77798.83,
+      "predicted_profit": 72170.54428855634,
+      "residual": 5628.285711443663,
+      "abs_error": 5628.285711443663
+    }
+  ],
+  "2": [
+    {
+      "original_id": 2,
+      "actual_profit": 191050.39,
+      "predicted_profit": 180642.25299736098,
+      "residual": 10408.137002639036,
+      "abs_error": 10408.137002639036
+    },
+    {
+      "original_id": 4,
+      "actual_profit": 166187.94,
+      "predicted_profit": 170343.31979498419,
+      "residual": -4155.379794984183,
+      "abs_error": 4155.379794984183
+    },
+    {
+      "original_id": 10,
+      "actual_profit": 146121.95,
+      "predicted_profit": 134182.14951650103,
+      "residual": 11939.800483498984,
+      "abs_error": 11939.800483498984
+    },
+    {
+      "original_id": 11,
+      "actual_profit": 144259.4,
+      "predicted_profit": 133873.92383811908,
+      "residual": 10385.476161880913,
+      "abs_error": 10385.476161880913
+    },
+    {
+      "original_id": 22,
+      "actual_profit": 110352.25,
+      "predicted_profit": 114580.9213645215,
+      "residual": -4228.671364521506,
+      "abs_error": 4228.671364521506
+    },
+    {
+      "original_id": 27,
+      "actual_profit": 105008.31,
+      "predicted_profit": 114717.24903894302,
+      "residual": -9708.93903894302,
+      "abs_error": 9708.93903894302
+    },
+    {
+      "original_id": 28,
+      "actual_profit": 103282.38,
+      "predicted_profit": 102284.64605182887,
+      "residual": 997.7339481711388,
+      "abs_error": 997.7339481711388
+    },
+    {
+      "original_id": 31,
+      "actual_profit": 97483.56,
+      "predicted_profit": 97433.45922275007,
+      "residual": 50.1007772499288,
+      "abs_error": 50.1007772499288
+    },
+    {
+      "original_id": 38,
+      "actual_profit": 81229.06,
+      "predicted_profit": 68335.07575312015,
+      "residual": 12893.984246879845,
+      "abs_error": 12893.984246879845
+    },
+    {
+      "original_id": 41,
+      "actual_profit": 77798.83,
+      "predicted_profit": 73701.10693630343,
+      "residual": 4097.723063696569,
+      "abs_error": 4097.723063696569
+    }
+  ],
+  "3": [
+    {
+      "original_id": 2,
+      "actual_profit": 191050.39,
+      "predicted_profit": 180258.24979853872,
+      "residual": 10792.140201461298,
+      "abs_error": 10792.140201461298
+    },
+    {
+      "original_id": 4,
+      "actual_profit": 166187.94,
+      "predicted_profit": 169961.41927630414,
+      "residual": -3773.4792763041332,
+      "abs_error": 3773.4792763041332
+    },
+    {
+      "original_id": 10,
+      "actual_profit": 146121.95,
+      "predicted_profit": 133815.4275493898,
+      "residual": 12306.52245061021,
+      "abs_error": 12306.52245061021
+    },
+    {
+      "original_id": 11,
+      "actual_profit": 144259.4,
+      "predicted_profit": 133524.92138467255,
+      "residual": 10734.478615327447,
+      "abs_error": 10734.478615327447
+    },
+    {
+      "original_id": 22,
+      "actual_profit": 110352.25,
+      "predicted_profit": 114342.45547445389,
+      "residual": -3990.205474453891,
+      "abs_error": 3990.205474453891
+    },
+    {
+      "original_id": 27,
+      "actual_profit": 105008.31,
+      "predicted_profit": 115382.63503846529,
+      "residual": -10374.325038465293,
+      "abs_error": 10374.325038465293
+    },
+    {
+      "original_id": 28,
+      "actual_profit": 103282.38,
+      "predicted_profit": 101939.27091345853,
+      "residual": 1343.1090865414735,
+      "abs_error": 1343.1090865414735
+    },
+    {
+      "original_id": 31,
+      "actual_profit": 97483.56,
+      "predicted_profit": 97944.78203137245,
+      "residual": -461.2220313724538,
+      "abs_error": 461.2220313724538
+    },
+    {
+      "original_id": 38,
+      "actual_profit": 81229.06,
+      "predicted_profit": 69026.24972723081,
+      "residual": 12202.810272769188,
+      "abs_error": 12202.810272769188
+    },
+    {
+      "original_id": 41,
+      "actual_profit": 77798.83,
+      "predicted_profit": 73492.7691291159,
+      "residual": 4306.060870884103,
+      "abs_error": 4306.060870884103
+    }
+  ],
+  "4": [
+    {
+      "original_id": 2,
+      "actual_profit": 191050.39,
+      "predicted_profit": 179827.91205675254,
+      "residual": 11222.477943247475,
+      "abs_error": 11222.477943247475
+    },
+    {
+      "original_id": 4,
+      "actual_profit": 166187.94,
+      "predicted_profit": 169510.75518374197,
+      "residual": -3322.815183741972,
+      "abs_error": 3322.815183741972
+    },
+    {
+      "original_id": 10,
+      "actual_profit": 146121.95,
+      "predicted_profit": 133300.28408634168,
+      "residual": 12821.665913658333,
+      "abs_error": 12821.665913658333
+    },
+    {
+      "original_id": 11,
+      "actual_profit": 144259.4,
+      "predicted_profit": 133851.2421601261,
+      "residual": 10408.157839873893,
+      "abs_error": 10408.157839873893
+    },
+    {
+      "original_id": 22,
+      "actual_profit": 110352.25,
+      "predicted_profit": 113898.4387599909,
+      "residual": -3546.188759990895,
+      "abs_error": 3546.188759990895
+    },
+    {
+      "original_id": 27,
+      "actual_profit": 105008.31,
+      "predicted_profit": 115491.25395900001,
+      "residual": -10482.943959000011,
+      "abs_error": 10482.943959000011
+    },
+    {
+      "original_id": 28,
+      "actual_profit": 103282.38,
+      "predicted_profit": 101374.28367857914,
+      "residual": 1908.0963214208605,
+      "abs_error": 1908.0963214208605
+    },
+    {
+      "original_id": 31,
+      "actual_profit": 97483.56,
+      "predicted_profit": 97880.01360638956,
+      "residual": -396.4536063895648,
+      "abs_error": 396.4536063895648
+    },
+    {
+      "original_id": 38,
+      "actual_profit": 81229.06,
+      "predicted_profit": 69057.74881968717,
+      "residual": 12171.311180312827,
+      "abs_error": 12171.311180312827
+    },
+    {
+      "original_id": 41,
+      "actual_profit": 77798.83,
+      "predicted_profit": 72987.32073135997,
+      "residual": 4811.509268640031,
+      "abs_error": 4811.509268640031
+    }
+  ],
+  "5": [
+    {
+      "original_id": 2,
+      "actual_profit": 191050.39,
+      "predicted_profit": 178537.4822105534,
+      "residual": 12512.907789446617,
+      "abs_error": 12512.907789446617
+    },
+    {
+      "original_id": 4,
+      "actual_profit": 166187.94,
+      "predicted_profit": 167921.06569550867,
+      "residual": -1733.125695508672,
+      "abs_error": 1733.125695508672
+    },
+    {
+      "original_id": 10,
+      "actual_profit": 146121.95,
+      "predicted_profit": 132447.7384517484,
+      "residual": 13674.211548251624,
+      "abs_error": 13674.211548251624
+    },
+    {
+      "original_id": 11,
+      "actual_profit": 144259.4,
+      "predicted_profit": 132582.2776081605,
+      "residual": 11677.122391839483,
+      "abs_error": 11677.122391839483
+    },
+    {
+      "original_id": 22,
+      "actual_profit": 110352.25,
+      "predicted_profit": 113969.43533012088,
+      "residual": -3617.1853301208757,
+      "abs_error": 3617.1853301208757
+    },
+    {
+      "original_id": 27,
+      "actual_profit": 105008.31,
+      "predicted_profit": 116161.24230164429,
+      "residual": -11152.932301644294,
+      "abs_error": 11152.932301644294
+    },
+    {
+      "original_id": 28,
+      "actual_profit": 103282.38,
+      "predicted_profit": 103015.20159795776,
+      "residual": 267.1784020422492,
+      "abs_error": 267.1784020422492
+    },
+    {
+      "original_id": 31,
+      "actual_profit": 97483.56,
+      "predicted_profit": 98791.73374687428,
+      "residual": -1308.1737468742795,
+      "abs_error": 1308.1737468742795
+    },
+    {
+      "original_id": 38,
+      "actual_profit": 81229.06,
+      "predicted_profit": 67851.69209675828,
+      "residual": 13377.367903241713,
+      "abs_error": 13377.367903241713
+    },
+    {
+      "original_id": 41,
+      "actual_profit": 77798.83,
+      "predicted_profit": 71976.0985125808,
+      "residual": 5822.731487419209,
+      "abs_error": 5822.731487419209
+    }
+  ]
+}
