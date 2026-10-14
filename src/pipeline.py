@@ -72,13 +72,20 @@ def sync_artifacts():
         shutil.copy(data_json_src, os.path.join(DOWNLOADS_DIR, "data.json"))
         shutil.copy(data_json_src, os.path.join(DOCS_DIR, "downloads", "data.json"))
 
-    # 3. 同步前端站點 HTML/CSS/JS 到 docs/
+    # 3. 同步前端站點 HTML/CSS/JS 到 docs/ 以及專案根目錄 (確保 GitHub Pages 不論選 /docs 還是 / (root) 均保證 100% 正常載入)
     for web_file in ["index.html", "style.css", "app.js", "chart.umd.min.js", "data.json", "default_data.js"]:
         src_path = os.path.join(WEB_DIR, web_file)
         if os.path.exists(src_path):
             shutil.copy(src_path, os.path.join(DOCS_DIR, web_file))
+            shutil.copy(src_path, os.path.join(BASE_DIR, web_file))
 
-    print("[同步完成] 所有產出物、模型、圖表與數據已 100% 同步至 web/、web/downloads/ 與 docs/")
+    # 4. 確保 .nojekyll 存在於根目錄、docs/ 與 web/
+    for nojekyll_dir in [BASE_DIR, DOCS_DIR, WEB_DIR]:
+        nojekyll_file = os.path.join(nojekyll_dir, ".nojekyll")
+        with open(nojekyll_file, "a") as f:
+            pass
+
+    print("[同步完成] 所有產出物、模型、圖表與數據已 100% 同步至 web/、web/downloads/、docs/ 與專案根目錄 (含 .nojekyll)")
 
 def main():
     print("=============================================================")

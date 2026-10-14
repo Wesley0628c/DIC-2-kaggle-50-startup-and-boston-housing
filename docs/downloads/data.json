@@ -2,7 +2,7 @@
   "metadata": {
     "title": "50 Startups 多元線性回歸分析與特徵選擇實證研究",
     "subtitle": "Multiple Linear Regression, Forward Selection & Benchmark Algorithms",
-    "generated_at": "2026-10-14 16:06:04",
+    "generated_at": "2026-10-14 16:09:26",
     "data_source_url": "https://raw.githubusercontent.com/harimittapalli/Mulitple-Linear-Reggression/master/50_Startups.csv",
     "total_rows": 50,
     "raw_features_count": 4,
