@@ -15,6 +15,44 @@
 
 ---
 
+## 📸 實證成果與加分功能完整圖庫 (Screenshots Gallery)
+
+本專案所有核心成果與兩大加分功能之實證截圖，已全數歸檔於倉庫的 [`screenshots/`](screenshots/) 與 [`docs/screenshots/`](docs/screenshots/) 目錄中：
+
+### 1. 🌟 加分項目實證（加總分 1分 & 2分）
+| 【加總分 1分】下拉選單呈現兩種 Problem 特寫 | 【加總分 1分】下拉切換至主題二 Boston 成果 |
+| :---: | :---: |
+| ![加分1分 下拉選單](screenshots/加分1分_01_下拉選單展開兩種Problem特寫.png) | ![加分1分 切換Boston](screenshots/加分1分_02_下拉切換至主題二_Boston_Housing成果.png) |
+
+| 【加總分 2分】任意輸入 Dataset 網址成功解析 | 【加總分 2分】純 JS 即時回歸求解指標與圖表 |
+| :---: | :---: |
+| ![加分2分 網址讀取](screenshots/加分2分_01_任意輸入Dataset網址成功解析與變數設定.png) | ![加分2分 求解成果](screenshots/加分2分_02_自訂資料集即時回歸求解指標與圖表成果.png) |
+
+### 2. Part 1: CRISP-DM 基準模型與評估圖表
+| 01. CRISP-DM 流程與基準回歸方程式 | 02. 係數表與 Actual vs. Pred 及殘差圖 |
+| :---: | :---: |
+| ![Part 1 基準模型](screenshots/01_Part1_CRISP_DM六階段流程與基準回歸模型.png) | ![Part 1 評估圖](screenshots/02_Part1_係數表與Actual_vs_Pred及殘差評估圖.png) |
+
+### 3. Part 2: 前向特徵選擇與奧卡姆剃刀谷地 (k=2)
+| 03. 前向特徵選擇控制台 (k=2 最優谷地) | 04. 特徵數 k 對 RMSE/R² 下凹曲線 |
+| :---: | :---: |
+| ![Part 2 控制台](screenshots/03_Part2_前向特徵選擇控制台_k2最優特徵組合.png) | ![Part 2 折線圖](screenshots/04_Part2_特徵數k對RMSE與R2趨勢圖.png) |
+
+| 05. 特徵選擇 1~5 步進程評估總表 | 06. Optuna 30 Trials 超參數調校歷程 |
+| :---: | :---: |
+| ![Part 2 總表](screenshots/05_Part2_特徵選擇漸進過程與評估指標總表.png) | ![Optuna 調校](screenshots/06_結果_Optuna超參數自動調校歷程與對比.png) |
+
+### 4. 主題二 Boston Housing 與課程統計指南、測試憑證
+| 07. 主題二 Boston Housing 房價成果 | 08. 課程統計評估核心指標指南 |
+| :---: | :---: |
+| ![Boston Housing](screenshots/07_結果_主題二_Boston_Housing波士頓房價成果.png) | ![課程統計指南](screenshots/08_結果_課程統計核心指標與評估指南.png) |
+
+| 【全專案檢驗】19 項自動化測試全數 100% 通過憑證 |
+| :---: |
+| ![測試通過憑證](screenshots/09_驗證_全套19項自動化測試通過紀錄.png) |
+
+---
+
 ## 🎯 專案核心成果摘要
 
 | 評估維度 | Part 1：全特徵基準模型 (k = 5) | Part 2：5-Fold CV 前向選擇最優 (k = 2) | Optuna 調校模型 (Ridge Pipeline) | Topic 2: Boston Housing (k = 13) |
@@ -43,13 +81,24 @@
 6. **Deployment (模型部署)**：以 `gzip + pickle` 序列化完整 Pipeline (`part1_linear_regression_model.pkl.gz`)，直接接受未編碼原始 DataFrame 進行端到端推論驗證。
 
 ### 2. 實測多元回歸經驗方程式
-$$\text{Profit} = 42554.17 - 959.2842 \times \text{State\_Florida} + 699.3691 \times \text{State\_New York} + 0.7735 \times \text{R\&D Spend} + 0.0329 \times \text{Administration} + 0.0366 \times \text{Marketing Spend}$$
 
-- **基準州 (Reference State)**：California ($\text{State\_Florida}=0, \text{State\_New York}=0$)。
-- **訓練集 OLS 統計推論 ($n=40, p=5, df=34$)**：
-  - **R&D Spend ($\beta = +0.7735, t = 14.03, p = 1.11 \times 10^{-15}$)**：極顯著正向影響 ($p < 0.001$)。
-  - **Marketing Spend ($\beta = +0.0366, t = 1.88, p = 0.0681$)**：邊際顯著 ($p < 0.10$)。
-  - **Administration 與州別虛擬變數**：未達顯著水準 ($p > 0.05$)。
+```text
+Profit = 42554.17 - 959.2842 × State_Florida + 699.3691 × State_New York
+         + 0.7735 × (R&D Spend) + 0.0329 × Administration + 0.0366 × Marketing Spend
+```
+
+$$\mathrm{Profit} = 42554.17 - 959.2842 \cdot \mathrm{State}_{\mathrm{Florida}} + 699.3691 \cdot \mathrm{State}_{\mathrm{New\ York}} + 0.7735 \cdot (\mathrm{R\&D\ Spend}) + 0.0329 \cdot \mathrm{Administration} + 0.0366 \cdot \mathrm{Marketing\ Spend}$$
+
+- **基準州 (Reference State)**：California（當 `State_Florida = 0` 且 `State_New York = 0` 時即代表加州企業）。
+- **訓練集 OLS 統計推論**（樣本數 $n = 40$，特徵數 $p = 5$，殘差自由度 $df = 34$）：
+  | 變數名稱 | 估計係數 ($\beta$) | $t$ 檢定值 | $p$ 值 ($p$-value) | 統計顯著性與經濟意涵 |
+  | :--- | :---: | :---: | :---: | :--- |
+  | **截距項 (Intercept)** | +42554.17 | 5.09 | $1.31 \times 10^{-5}$ | 極顯著 ($p < 0.001$)，基準獲利底線 |
+  | **R&D Spend (研發支出)** | **+0.7735** | **14.03** | **$1.11 \times 10^{-15}$** | **極顯著正向影響** ($p < 0.001$)，每投入 $1 增利約 $0.77 |
+  | **Marketing Spend (行銷支出)** | **+0.0366** | **1.88** | **0.0681** | **邊際顯著** ($p < 0.10$)，具正面輔助作用 |
+  | **Administration (行政支出)** | +0.0329 | 0.49 | 0.6241 | 未達顯著水準 ($p > 0.05$)，對利潤無邊際影響 |
+  | **State_Florida (佛羅里達州)** | -959.28 | -0.24 | 0.8136 | 未達顯著水準 ($p > 0.05$)，與加州無統計顯著差異 |
+  | **State_New York (紐約州)** | +699.37 | 0.19 | 0.8497 | 未達顯著水準 ($p > 0.05$)，與加州無統計顯著差異 |
 
 ---
 
@@ -102,42 +151,6 @@ $$\text{Profit} = 42554.17 - 959.2842 \times \text{State\_Florida} + 699.3691 \t
 3. **先切分後填補**：僅由訓練集有效數值計算中位數，測試集套用訓練集中位數，杜絕前端資料洩漏。
 4. **未知類別容錯**：測試集或新輸入未見類別自動填補為 0（歸入基準類別），杜絕前端崩潰。
 5. **自由度防護檢驗**：切分後訓練樣本 $N_{\text{train}} \le P + 1$ 時明確回報錯誤，不輸出假正常結果。
-
-## 📸 實證成果與加分功能完整圖庫 (Screenshots Gallery)
-
-本專案所有核心成果與兩大加分功能之實證截圖，已全數歸檔於倉庫的 [`screenshots/`](screenshots/) 與 [`docs/screenshots/`](docs/screenshots/) 目錄中：
-
-### 1. Part 1: CRISP-DM 基準模型與評估圖表
-| 01. CRISP-DM 流程與基準回歸方程式 | 02. 係數表與 Actual vs. Pred 及殘差圖 |
-| :---: | :---: |
-| ![Part 1 基準模型](screenshots/01_Part1_CRISP_DM六階段流程與基準回歸模型.png) | ![Part 1 評估圖](screenshots/02_Part1_係數表與Actual_vs_Pred及殘差評估圖.png) |
-
-### 2. Part 2: 前向特徵選擇與奧卡姆剃刀谷地 (k=2)
-| 03. 前向特徵選擇控制台 (k=2 最優谷地) | 04. 特徵數 k 對 RMSE/R² 下凹曲線 |
-| :---: | :---: |
-| ![Part 2 控制台](screenshots/03_Part2_前向特徵選擇控制台_k2最優特徵組合.png) | ![Part 2 折線圖](screenshots/04_Part2_特徵數k對RMSE與R2趨勢圖.png) |
-
-| 05. 特徵選擇 1~5 步進程評估總表 | 06. Optuna 30 Trials 超參數調校歷程 |
-| :---: | :---: |
-| ![Part 2 總表](screenshots/05_Part2_特徵選擇漸進過程與評估指標總表.png) | ![Optuna 調校](screenshots/06_結果_Optuna超參數自動調校歷程與對比.png) |
-
-### 3. 主題二 Boston Housing 與課程統計指南
-| 07. 主題二 Boston Housing 房價成果 | 08. 課程統計評估核心指標指南 |
-| :---: | :---: |
-| ![Boston Housing](screenshots/07_結果_主題二_Boston_Housing波士頓房價成果.png) | ![課程統計指南](screenshots/08_結果_課程統計核心指標與評估指南.png) |
-
-### 4. 🌟 加分項目實證（加總分 1分 & 2分）與自動化測試憑證
-| 【加總分 1分】下拉選單呈現兩種 Problem 特寫 | 【加總分 1分】下拉切換至主題二 Boston 成果 |
-| :---: | :---: |
-| ![加分1分 下拉選單](screenshots/加分1分_01_下拉選單展開兩種Problem特寫.png) | ![加分1分 切換Boston](screenshots/加分1分_02_下拉切換至主題二_Boston_Housing成果.png) |
-
-| 【加總分 2分】任意輸入 Dataset 網址成功解析 | 【加總分 2分】純 JS 即時回歸求解指標與圖表 |
-| :---: | :---: |
-| ![加分2分 網址讀取](screenshots/加分2分_01_任意輸入Dataset網址成功解析與變數設定.png) | ![加分2分 求解成果](screenshots/加分2分_02_自訂資料集即時回歸求解指標與圖表成果.png) |
-
-| 【全專案檢驗】19 項自動化測試全數 100% 通過憑證 |
-| :---: |
-| ![測試通過憑證](screenshots/09_驗證_全套19項自動化測試通過紀錄.png) |
 
 ---
 

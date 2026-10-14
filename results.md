@@ -54,7 +54,11 @@
 
 ### D. Modeling (端到端 Pipeline 擬合與訓練集推論)
 - **完整擬合方程式**：
-  $$\text{Profit} = 42554.17 + 0.7735 \times (\text{R\&D Spend}) + 0.0329 \times (\text{Administration}) + 0.0366 \times (\text{Marketing Spend}) - 959.2842 \times (\text{State\_Florida}) + 699.3691 \times (\text{State\_New York})$$
+  ```text
+  Profit = 42554.17 + 0.7735 × (R&D Spend) + 0.0329 × Administration + 0.0366 × Marketing Spend
+           - 959.2842 × State_Florida + 699.3691 × State_New York
+  ```
+  $$\mathrm{Profit} = 42554.17 + 0.7735 \cdot (\mathrm{R\&D\ Spend}) + 0.0329 \cdot \mathrm{Administration} + 0.0366 \cdot \mathrm{Marketing\ Spend} - 959.2842 \cdot \mathrm{State}_{\mathrm{Florida}} + 699.3691 \cdot \mathrm{State}_{\mathrm{New\ York}}$$
 - **訓練集參數檢定表 ($n=40, p=5, df_{\text{residuals}}=34$)**：
   | 變數 (Variable) | 係數估計值 ($\hat{\beta}$) | 標準誤 (Std. Error) | t 統計量 ($t$-stat) | p 值 ($p$-value) | 統計意義詮釋 |
   | :--- | :---: | :---: | :---: | :---: | :--- |
