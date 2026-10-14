@@ -191,28 +191,66 @@ def run_part1():
     test_rmse = float(np.sqrt(test_mse))
     test_r2 = float(r2_score(y_test, y_test_pred))
 
+    # 嚴謹計算訓練集 OLS 統計推論量 (樣本數 n=40, 特徵數 p=5, 自由度 df=34)
+    from scipy import stats
+    n_train = len(y_train)
+    p_feat = X_train.shape[1]
+    df_resid = n_train - p_feat - 1
+    rss_train = float(np.sum((y_train - y_train_pred) ** 2))
+    tss_train = float(np.sum((y_train - np.mean(y_train)) ** 2))
+    sigma2 = rss_train / df_resid
+
+    train_adj_r2 = float(1.0 - (1.0 - train_r2) * (n_train - 1) / df_resid)
+    f_stat = float(((tss_train - rss_train) / p_feat) / (rss_train / df_resid))
+    f_pvalue = float(1.0 - stats.f.cdf(f_stat, p_feat, df_resid))
+
+    # 設計矩陣含有截距項
+    X_design = np.column_stack([np.ones(n_train), X_train])
+    cov_beta = sigma2 * np.linalg.inv(X_design.T @ X_design)
+    se_beta = np.sqrt(np.diag(cov_beta))
+
+    beta_vec = np.concatenate([[intercept], regressor.coef_])
+    t_stats = beta_vec / se_beta
+    p_values = 2 * (1 - stats.t.cdf(np.abs(t_stats), df=df_resid))
+
+    param_names = ["Intercept"] + encoded_feature_names
+    param_stats = {}
+    for name, b, s, t, pv in zip(param_names, beta_vec, se_beta, t_stats, p_values):
+        param_stats[name] = {
+            "coef": float(b),
+            "stderr": float(s),
+            "tstat": float(t),
+            "pvalue": float(pv)
+        }
+
     metrics = {
         "train": {
-            "MAE": round(train_mae, 4),
-            "MSE": round(train_mse, 4),
-            "RMSE": round(train_rmse, 4),
-            "R2": round(train_r2, 4)
+            "MAE": train_mae,
+            "MSE": train_mse,
+            "RMSE": train_rmse,
+            "R2": train_r2,
+            "Adjusted_R2": train_adj_r2,
+            "F_statistic": f_stat,
+            "F_pvalue": f_pvalue,
+            "degrees_of_freedom": {"df_model": p_feat, "df_residuals": df_resid}
         },
         "test": {
-            "MAE": round(test_mae, 4),
-            "MSE": round(test_mse, 4),
-            "RMSE": round(test_rmse, 4),
-            "R2": round(test_r2, 4)
+            "MAE": test_mae,
+            "MSE": test_mse,
+            "RMSE": test_rmse,
+            "R2": test_r2
         }
     }
 
     print("\n[評估指標比較表 (Metrics Comparison)]：")
-    print(f"{'指標 Metric':<12} | {'訓練集 (Train)':<18} | {'測試集 (Test)':<18}")
-    print("-" * 52)
-    print(f"{'MAE':<12} | {train_mae:<18.4f} | {test_mae:<18.4f}")
-    print(f"{'MSE':<12} | {train_mse:<18.4f} | {test_mse:<18.4f}")
-    print(f"{'RMSE':<12} | {train_rmse:<18.4f} | {test_rmse:<18.4f}")
-    print(f"{'R² (判定係數)':<10} | {train_r2:<18.4f} | {test_r2:<18.4f}")
+    print(f"{'指標 Metric':<16} | {'訓練集 (Train)':<22} | {'測試集 (Test)':<22}")
+    print("-" * 62)
+    print(f"{'MAE':<16} | {train_mae:<22.4f} | {test_mae:<22.4f}")
+    print(f"{'MSE':<16} | {train_mse:<22.4f} | {test_mse:<22.4f}")
+    print(f"{'RMSE':<16} | {train_rmse:<22.4f} | {test_rmse:<22.4f}")
+    print(f"{'R² (判定係數)':<14} | {train_r2:<22.4f} | {test_r2:<22.4f}")
+    print(f"{'Adjusted R²':<16} | {train_adj_r2:<22.4f} | {'— (非OLS樣本統計量)':<22}")
+    print(f"{'F-statistic':<16} | {f'{f_stat:.2f} (p={f_pvalue:.2e})':<22} | {'—':<22}")
 
     # 逐筆測試集明細 (Row ID, 實際值, 預測值, 殘差, 絕對誤差)
     test_residuals = y_test - y_test_pred
@@ -349,6 +387,7 @@ def run_part1():
         "model_parameters": {
             "intercept": intercept,
             "coefficients": coef_dict,
+            "parameter_statistics": param_stats,
             "formula": regression_formula
         },
         "metrics": metrics,

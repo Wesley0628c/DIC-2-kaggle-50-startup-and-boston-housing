@@ -1,9 +1,8 @@
 {
   "metadata": {
-    "title": "50 Startups 多元線性回歸分析與前向特徵選擇實驗報告",
-    "subtitle": "Multiple Linear Regression & Forward Feature Selection",
-    "author": "課程作業小組",
-    "generated_at": "2026-10-14 11:31:59",
+    "title": "50 Startups 多元線性回歸分析與特徵選擇實證研究",
+    "subtitle": "Multiple Linear Regression, Forward Selection & Benchmark Algorithms",
+    "generated_at": "2026-10-14 16:06:04",
     "data_source_url": "https://raw.githubusercontent.com/harimittapalli/Mulitple-Linear-Reggression/master/50_Startups.csv",
     "total_rows": 50,
     "raw_features_count": 4,
@@ -12,7 +11,8 @@
     "random_state": 0,
     "train_rows_count": 40,
     "test_rows_count": 10,
-    "test_row_ids": 10
+    "train_indices": 40,
+    "test_indices": 10
   },
   "dataset": {
     "head_5": [
@@ -464,8 +464,8 @@
     "describe": {
       "R&D Spend": {
         "count": 50,
-        "mean": 73721.62,
-        "std": 45902.26,
+        "mean": 73721.6156,
+        "std": 45902.25648230753,
         "min": 0.0,
         "q25": 39936.37,
         "median": 73051.08,
@@ -474,32 +474,32 @@
       },
       "Administration": {
         "count": 50,
-        "mean": 121344.64,
-        "std": 28017.8,
+        "mean": 121344.63960000001,
+        "std": 28017.802755488683,
         "min": 51283.14,
-        "q25": 103730.88,
-        "median": 122699.79,
+        "q25": 103730.875,
+        "median": 122699.795,
         "q75": 144842.18,
         "max": 182645.56
       },
       "Marketing Spend": {
         "count": 50,
-        "mean": 211025.1,
-        "std": 122290.31,
+        "mean": 211025.09780000002,
+        "std": 122290.31072584528,
         "min": 0.0,
-        "q25": 129300.13,
+        "q25": 129300.1325,
         "median": 212716.24,
-        "q75": 299469.08,
+        "q75": 299469.08499999996,
         "max": 471784.1
       },
       "Profit": {
         "count": 50,
-        "mean": 112012.64,
-        "std": 40306.18,
+        "mean": 112012.63920000002,
+        "std": 40306.18033765055,
         "min": 14681.4,
-        "q25": 90138.9,
+        "q25": 90138.9025,
         "median": 107978.19,
-        "q75": 139765.98,
+        "q75": 139765.97749999998,
         "max": 192261.83
       }
     },
@@ -523,20 +523,20 @@
       "phase_name_zh": "商業理解 (Business Understanding)",
       "phase_name_en": "Business Understanding",
       "goal": "確認預測目標為 Profit，分析研發 (R&D)、行政 (Administration)、行銷 (Marketing) 與地理位置 (State) 對利潤之關聯。",
-      "key_takeaway": "線性模型提供統計上的相依性與敏感度分析，不得逕行詮釋為因果關係。"
+      "key_takeaway": "線性模型提供變數間敏感度與相依性度量，但不可逕行宣稱為因果關係。"
     },
     {
       "id": "data_understanding",
       "phase_name_zh": "資料理解 (Data Understanding)",
       "phase_name_en": "Data Understanding",
       "goal": "探勘 50 筆企業資料之分佈、極值、缺失值 (0 筆) 與重複列 (0 筆)。",
-      "key_takeaway": "R&D Spend 與 Profit 呈現極高之正線性相關，行政支出關聯相對微弱。"
+      "key_takeaway": "R&D Spend 與 Profit 呈現極高度線性正相關 (r = 0.973)，行政支出關聯相對微弱。"
     },
     {
       "id": "data_preparation",
       "phase_name_zh": "資料準備 (Data Preparation)",
       "phase_name_en": "Data Preparation",
-      "goal": "將類別型 State 進行 One-Hot Encoding，剔除第一個類別 (California) 作為基準州以消除虛擬變數陷阱 (Dummy Variable Trap)。",
+      "goal": "將類別型 State 進行 One-Hot Encoding，剃除第一個類別 (California) 作為基準州以避免虛擬變數陷阱 (Dummy Variable Trap)。",
       "key_takeaway": "特徵維度擴增至 5 維；切分 train=40, test=10 (test_size=0.2, random_state=0)。"
     },
     {
@@ -544,20 +544,20 @@
       "phase_name_zh": "模型建置 (Modeling)",
       "phase_name_en": "Modeling",
       "goal": "採用 Ordinary Least Squares (OLS) 多元線性回歸模型，求解最佳擬合平面之截距與迴歸係數。",
-      "key_takeaway": "截距 b0 = 42554.17，R&D 支出係數約 +0.7735，表示每增加 1 美元研發預算，利潤預期增加 0.77 美元。"
+      "key_takeaway": "截距 b0 = 42554.17，R&D 支出係數約 +0.7735，表示每增加 1 美元研發預算，利潤預期增加約 0.77 美元。"
     },
     {
       "id": "evaluation",
       "phase_name_zh": "模型評估 (Evaluation)",
       "phase_name_en": "Evaluation",
-      "goal": "計算 MAE, MSE, RMSE, R² 指標，繪製 Actual vs Predicted 與殘差圖 (Residual Plot)。",
-      "key_takeaway": "測試集 RMSE 為 9137.99，R² 為 0.9347，模型解釋了測試集約 93.47% 的利潤變異。"
+      "goal": "計算 MAE, MSE, RMSE, R² 指標，進行 OLS 殘差假設檢定與顯著性分析。",
+      "key_takeaway": "測試集 RMSE 為 9137.99，R² 為 0.9347；整體模型 F 統計量為 129.70 (p = 1.11e-16)。"
     },
     {
       "id": "deployment",
       "phase_name_zh": "模型部署與打包 (Deployment)",
       "phase_name_en": "Deployment",
-      "goal": "使用 pickle + gzip 序列化模型、前處理轉換器、特徵欄位順序與基準州設定，並具備未知州別例外檢查。",
+      "goal": "使用 pickle + gzip 序列化模型與前處理轉換器，確保由原始欄位直接推論之完全可重現性。",
       "key_takeaway": "模型重載驗證數值誤差為 0.00e+00，確保生產環境端到端推論完全一致。"
     }
   ],
@@ -571,26 +571,73 @@
       "Marketing Spend"
     ],
     "reference_state": "California",
-    "intercept": 42554.1676,
-    "coefficients": {
-      "State_Florida": -959.2842,
-      "State_New York": 699.3691,
-      "R&D Spend": 0.7735,
-      "Administration": 0.0329,
-      "Marketing Spend": 0.0366
+    "model": {
+      "intercept": 42554.16761773877,
+      "coefficients": {
+        "State_Florida": -959.2841600530494,
+        "State_New York": 699.3690525208439,
+        "R&D Spend": 0.7734671927327792,
+        "Administration": 0.032884597536263944,
+        "Marketing Spend": 0.03661002586381927
+      },
+      "parameter_statistics": {
+        "Intercept": {
+          "coef": 42554.1676,
+          "stderr": 8358.5382,
+          "tstat": 5.0911,
+          "pvalue": 1.3087e-05
+        },
+        "State_Florida": {
+          "coef": -959.2842,
+          "stderr": 4038.1077,
+          "tstat": -0.2376,
+          "pvalue": 0.8136
+        },
+        "State_New York": {
+          "coef": 699.3691,
+          "stderr": 3661.5627,
+          "tstat": 0.191,
+          "pvalue": 0.8497
+        },
+        "R&D Spend": {
+          "coef": 0.7735,
+          "stderr": 0.0551,
+          "tstat": 14.0298,
+          "pvalue": 1.1102e-15
+        },
+        "Administration": {
+          "coef": 0.0329,
+          "stderr": 0.0665,
+          "tstat": 0.4945,
+          "pvalue": 0.6241
+        },
+        "Marketing Spend": {
+          "coef": 0.0366,
+          "stderr": 0.0194,
+          "tstat": 1.8841,
+          "pvalue": 0.0681
+        }
+      },
+      "formula": "Profit = 42554.17 - 959.2842 * (State_Florida) + 699.3691 * (State_New York) + 0.7735 * (R&D Spend) + 0.0329 * (Administration) + 0.0366 * (Marketing Spend)"
     },
-    "formula": "Profit = 42554.17 - 959.2842 * (State_Florida) + 699.3691 * (State_New York) + 0.7735 * (R&D Spend) + 0.0329 * (Administration) + 0.0366 * (Marketing Spend)",
     "train_metrics": {
       "MAE": 6341.5358,
       "MSE": 81571001.8008,
       "RMSE": 9031.6666,
-      "R2": 0.9502
+      "R2": 0.9502,
+      "Adjusted_R2": 0.9429,
+      "F_statistic": 129.7,
+      "F_pvalue": 1.11e-16,
+      "degrees_of_freedom": {
+        "df_model": 5,
+        "df_residuals": 34
+      }
     },
     "test_metrics": {
-      "MAE": 7514.2937,
-      "MSE": 83502864.0326,
-      "RMSE": 9137.9902,
-      "R2": 0.9347
+      "MAE": 7514.293659639715,
+      "MSE": 83502864.03257981,
+      "RMSE": 9137.990152795077,
+      "R2": 0.9347068473282406
     },
     "test_predictions": [
       {
@@ -707,7 +754,7 @@
   },
   "part2": {
     "title": "Part 2: Forward Selection 前向特徵選擇演算法",
-    "methodology_note": "本實作依講義規範，以測試集 (Test Set) RMSE 最小化作為特徵挑選條件。需注意：因測試集已參與模型篩選 (Model Selection)，指標偏向樂觀，嚴謹工業實務應採用驗證集或 K-Fold 交叉驗證。",
+    "methodology_note": "本實作嚴格遵循課程講義規格，每輪以獨立測試集 (Test Set) RMSE 最小化作為特徵挑選條件。方法學限制說明：由於測試集已參與模型篩選路徑 (Model Selection)，測試集之評估指標在統計上偏向樂觀 (Optimistic Bias)；嚴謹工業實務應採用獨立驗證集 (Validation Set) 或嵌套交叉驗證 (Nested CV)。",
     "candidate_columns": [
       "Administration",
       "Marketing Spend",
@@ -722,44 +769,58 @@
         "selected_features": [
           "R&D Spend"
         ],
-        "test_rmse": 8274.868,
-        "test_r2": 0.9465,
-        "test_mae": 6772.4533,
-        "train_rmse": 9493.5806,
-        "train_r2": 0.945,
-        "intercept": 48416.2977,
+        "test_rmse": 8274.86801822599,
+        "test_r2": 0.946458760778722,
+        "test_mae": 6772.453280477899,
+        "test_mse": 68473440.71905932,
+        "train_rmse": 9493.580597976612,
+        "train_r2": 0.9449589778363044,
+        "train_adj_r2": 0.9435105298846282,
+        "train_f_stat": 652.3941552354449,
+        "train_f_pvalue": 1.1102230246251563e-16,
+        "intercept": 48416.297661385026,
         "coefficients": {
-          "R&D Spend": 0.8516
+          "R&D Spend": 0.8516227998779371
         },
         "candidates_evaluation": [
           {
             "candidate": "Administration",
-            "test_rmse": 45669.7058,
-            "test_r2": -0.6309,
+            "test_rmse": 45669.70577941752,
+            "test_r2": -0.6308825840983827,
+            "train_rmse": 38162.178493008825,
+            "train_r2": 0.110609013129954,
             "is_selected": false
           },
           {
             "candidate": "Marketing Spend",
-            "test_rmse": 25529.0539,
-            "test_r2": 0.4904,
+            "test_rmse": 25529.053887870352,
+            "test_r2": 0.4903926212546319,
+            "train_rmse": 26731.776740752688,
+            "train_r2": 0.5636026973161414,
             "is_selected": false
           },
           {
             "candidate": "R&D Spend",
-            "test_rmse": 8274.868,
-            "test_r2": 0.9465,
+            "test_rmse": 8274.86801822599,
+            "test_r2": 0.946458760778722,
+            "train_rmse": 9493.580597976612,
+            "train_r2": 0.9449589778363044,
             "is_selected": true
           },
           {
             "candidate": "State_Florida",
-            "test_rmse": 37588.0529,
-            "test_r2": -0.1048,
+            "test_rmse": 37588.05292629757,
+            "test_r2": -0.1047548756438994,
+            "train_rmse": 40460.57672769297,
+            "train_r2": 0.0002519980153838,
             "is_selected": false
           },
           {
             "candidate": "State_New York",
-            "test_rmse": 41366.0233,
-            "test_r2": -0.338,
+            "test_rmse": 41366.02329593475,
+            "test_r2": -0.337992909392512,
+            "train_rmse": 39991.13006785038,
+            "train_r2": 0.0233167039814222,
             "is_selected": false
           }
         ],
@@ -843,39 +904,51 @@
           "R&D Spend",
           "Marketing Spend"
         ],
-        "test_rmse": 8198.7972,
-        "test_r2": 0.9474,
-        "test_mae": 6886.5946,
-        "train_rmse": 9078.6179,
-        "train_r2": 0.9497,
-        "intercept": 46346.3388,
+        "test_rmse": 8198.797190788491,
+        "test_r2": 0.9474386447268488,
+        "test_mae": 6886.594588246512,
+        "test_mse": 67220275.37568125,
+        "train_rmse": 9078.617918486692,
+        "train_r2": 0.9496654854268444,
+        "train_adj_r2": 0.9469447008553225,
+        "train_f_stat": 349.04104329569407,
+        "train_f_pvalue": 1.1102230246251563e-16,
+        "intercept": 46346.33876123658,
         "coefficients": {
-          "R&D Spend": 0.7886,
-          "Marketing Spend": 0.0326
+          "R&D Spend": 0.7886182999424612,
+          "Marketing Spend": 0.03257662731702063
         },
         "candidates_evaluation": [
           {
             "candidate": "Administration",
-            "test_rmse": 8237.5402,
-            "test_r2": 0.9469,
+            "test_rmse": 8237.540194485355,
+            "test_r2": 0.9469407189577184,
+            "train_rmse": 9493.505441460638,
+            "train_r2": 0.944959849304144,
             "is_selected": false
           },
           {
             "candidate": "Marketing Spend",
-            "test_rmse": 8198.7972,
-            "test_r2": 0.9474,
+            "test_rmse": 8198.797190788491,
+            "test_r2": 0.9474386447268488,
+            "train_rmse": 9078.617918486692,
+            "train_r2": 0.9496654854268444,
             "is_selected": true
           },
           {
             "candidate": "State_Florida",
-            "test_rmse": 8217.4464,
-            "test_r2": 0.9472,
+            "test_rmse": 8217.446447873415,
+            "test_r2": 0.947199257159004,
+            "train_rmse": 9492.00718052055,
+            "train_r2": 0.944977220759014,
             "is_selected": false
           },
           {
             "candidate": "State_New York",
-            "test_rmse": 8273.8282,
-            "test_r2": 0.9465,
+            "test_rmse": 8273.828202485938,
+            "test_r2": 0.9464722158635016,
+            "train_rmse": 9493.578848073585,
+            "train_r2": 0.9449589981271612,
             "is_selected": false
           }
         ],
@@ -960,34 +1033,44 @@
           "Marketing Spend",
           "State_New York"
         ],
-        "test_rmse": 8309.0597,
-        "test_r2": 0.946,
-        "test_mae": 7028.4353,
-        "train_rmse": 9069.6848,
-        "train_r2": 0.9498,
-        "intercept": 46100.2913,
+        "test_rmse": 8309.059683481717,
+        "test_r2": 0.9460153830071388,
+        "test_mae": 7028.435331818949,
+        "test_mse": 69040472.8236613,
+        "train_rmse": 9069.684820873445,
+        "train_r2": 0.9497644921078412,
+        "train_adj_r2": 0.9455781997834948,
+        "train_f_stat": 226.87486169664257,
+        "train_f_pvalue": 1.1102230246251563e-16,
+        "intercept": 46100.29130551412,
         "coefficients": {
-          "R&D Spend": 0.7859,
-          "Marketing Spend": 0.0333,
-          "State_New York": 864.0019
+          "R&D Spend": 0.7858709815066743,
+          "Marketing Spend": 0.03327182941032258,
+          "State_New York": 864.0018700527295
         },
         "candidates_evaluation": [
           {
             "candidate": "Administration",
-            "test_rmse": 8803.7758,
-            "test_r2": 0.9394,
+            "test_rmse": 8803.775790469346,
+            "test_r2": 0.939395591782057,
+            "train_rmse": 9052.267248800474,
+            "train_r2": 0.9499572530324032,
             "is_selected": false
           },
           {
             "candidate": "State_Florida",
-            "test_rmse": 8376.4505,
-            "test_r2": 0.9451,
+            "test_rmse": 8376.45051976933,
+            "test_r2": 0.9451361446943416,
+            "train_rmse": 9067.174045517751,
+            "train_r2": 0.9497923018100066,
             "is_selected": false
           },
           {
             "candidate": "State_New York",
-            "test_rmse": 8309.0597,
-            "test_r2": 0.946,
+            "test_rmse": 8309.059683481717,
+            "test_r2": 0.9460153830071388,
+            "train_rmse": 9069.684820873445,
+            "train_r2": 0.9497644921078412,
             "is_selected": true
           }
         ],
@@ -1073,29 +1156,37 @@
           "State_New York",
           "State_Florida"
         ],
-        "test_rmse": 8409.9167,
-        "test_r2": 0.9447,
-        "test_mae": 7109.162,
-        "train_rmse": 9064.1182,
-        "train_r2": 0.9498,
-        "intercept": 46329.0602,
+        "test_rmse": 8409.916714488052,
+        "test_r2": 0.9446968769428332,
+        "test_mae": 7109.161997627586,
+        "test_mse": 70726699.14462551,
+        "train_rmse": 9064.118245163729,
+        "train_r2": 0.9498261378977876,
+        "train_adj_r2": 0.9440919822289634,
+        "train_f_stat": 165.6435912721812,
+        "train_f_pvalue": 1.1102230246251563e-16,
+        "intercept": 46329.060178542495,
         "coefficients": {
-          "R&D Spend": 0.7851,
-          "Marketing Spend": 0.034,
-          "State_New York": 554.6573,
-          "State_Florida": -826.4682
+          "R&D Spend": 0.7851417173112168,
+          "Marketing Spend": 0.03395640234030121,
+          "State_New York": 554.6573328267123,
+          "State_Florida": -826.4681587619034
         },
         "candidates_evaluation": [
           {
             "candidate": "Administration",
-            "test_rmse": 8997.1993,
-            "test_r2": 0.9367,
+            "test_rmse": 8997.199285982137,
+            "test_r2": 0.9367033175958313,
+            "train_rmse": 9039.158955243098,
+            "train_r2": 0.9501020786438475,
             "is_selected": false
           },
           {
             "candidate": "State_Florida",
-            "test_rmse": 8409.9167,
-            "test_r2": 0.9447,
+            "test_rmse": 8409.916714488052,
+            "test_r2": 0.9446968769428332,
+            "train_rmse": 9064.118245163729,
+            "train_r2": 0.9498261378977876,
             "is_selected": true
           }
         ],
@@ -1182,24 +1273,30 @@
           "State_Florida",
           "Administration"
         ],
-        "test_rmse": 9137.9902,
-        "test_r2": 0.9347,
-        "test_mae": 7514.2937,
-        "train_rmse": 9031.6666,
-        "train_r2": 0.9502,
-        "intercept": 42554.1676,
+        "test_rmse": 9137.99015279213,
+        "test_r2": 0.9347068473282828,
+        "test_mae": 7514.293659638902,
+        "test_mse": 83502864.03252594,
+        "train_rmse": 9031.66661257897,
+        "train_r2": 0.9501847627493608,
+        "train_adj_r2": 0.9428589925654433,
+        "train_f_stat": 129.70441863373296,
+        "train_f_pvalue": 1.1102230246251563e-16,
+        "intercept": 42554.16761774788,
         "coefficients": {
-          "R&D Spend": 0.7735,
-          "Marketing Spend": 0.0366,
-          "State_New York": 699.3691,
-          "State_Florida": -959.2842,
-          "Administration": 0.0329
+          "R&D Spend": 0.7734671927328999,
+          "Marketing Spend": 0.036610025863816474,
+          "State_New York": 699.3690525188922,
+          "State_Florida": -959.2841600570787,
+          "Administration": 0.03288459753613828
         },
         "candidates_evaluation": [
           {
             "candidate": "Administration",
-            "test_rmse": 9137.9902,
-            "test_r2": 0.9347,
+            "test_rmse": 9137.99015279213,
+            "test_r2": 0.9347068473282828,
+            "train_rmse": 9031.66661257897,
+            "train_r2": 0.9501847627493608,
             "is_selected": true
           }
         ],
@@ -1289,7 +1386,10 @@
         "test_mae": 6772.453280477899,
         "test_mse": 68473440.71905932,
         "train_rmse": 9493.580597976612,
-        "train_r2": 0.9449589778363044
+        "train_r2": 0.9449589778363044,
+        "train_adj_r2": 0.9435105298846282,
+        "train_f_stat": 652.3941552354449,
+        "train_f_pvalue": 1.1102230246251563e-16
       },
       {
         "step": 2,
@@ -1302,7 +1402,10 @@
         "test_mae": 6886.594588246512,
         "test_mse": 67220275.37568125,
         "train_rmse": 9078.617918486692,
-        "train_r2": 0.9496654854268444
+        "train_r2": 0.9496654854268444,
+        "train_adj_r2": 0.9469447008553225,
+        "train_f_stat": 349.04104329569407,
+        "train_f_pvalue": 1.1102230246251563e-16
       },
       {
         "step": 3,
@@ -1315,7 +1418,10 @@
         "test_mae": 7028.435331818949,
         "test_mse": 69040472.8236613,
         "train_rmse": 9069.684820873445,
-        "train_r2": 0.9497644921078412
+        "train_r2": 0.9497644921078412,
+        "train_adj_r2": 0.9455781997834948,
+        "train_f_stat": 226.87486169664257,
+        "train_f_pvalue": 1.1102230246251563e-16
       },
       {
         "step": 4,
@@ -1328,7 +1434,10 @@
         "test_mae": 7109.161997627586,
         "test_mse": 70726699.14462551,
         "train_rmse": 9064.118245163729,
-        "train_r2": 0.9498261378977876
+        "train_r2": 0.9498261378977876,
+        "train_adj_r2": 0.9440919822289634,
+        "train_f_stat": 165.6435912721812,
+        "train_f_pvalue": 1.1102230246251563e-16
       },
       {
         "step": 5,
@@ -1341,7 +1450,10 @@
         "test_mae": 7514.293659638902,
         "test_mse": 83502864.03252594,
         "train_rmse": 9031.66661257897,
-        "train_r2": 0.9501847627493608
+        "train_r2": 0.9501847627493608,
+        "train_adj_r2": 0.9428589925654433,
+        "train_f_stat": 129.70441863373296,
+        "train_f_pvalue": 1.1102230246251563e-16
       }
     ],
     "best_feature_count": 2,
@@ -1349,26 +1461,1595 @@
       "R&D Spend",
       "Marketing Spend"
     ],
-    "best_test_rmse": 8198.7972,
-    "best_test_r2": 0.9474
+    "best_test_rmse": 8198.797190788491,
+    "best_test_r2": 0.9474386447268488
+  },
+  "algorithms_benchmark": {
+    "Forward SFS": [
+      {
+        "k": 1,
+        "features": [
+          "R&D Spend"
+        ],
+        "test_rmse": 8274.86801822599,
+        "test_r2": 0.9464587607787219,
+        "test_mae": 6772.453280477899,
+        "test_mse": 68473440.71905932,
+        "train_rmse": 9493.580597976612,
+        "train_r2": 0.9449589778363044,
+        "train_adj_r2": 0.9435105298846282,
+        "train_f_stat": 652.3941552354449,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 48416.297661385026,
+        "coefficients": {
+          "R&D Spend": 0.8516227998779371
+        },
+        "test_predictions": [
+          179090.58602508352,
+          169438.148435391,
+          135207.80019516923,
+          134150.8341057847,
+          111431.75202432103,
+          109824.77386586336,
+          104667.27805997859,
+          100481.43277138655,
+          65644.27773756774,
+          72170.54428855634
+        ]
+      },
+      {
+        "k": 2,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend"
+        ],
+        "test_rmse": 8198.797190788491,
+        "test_r2": 0.9474386447268488,
+        "test_mae": 6886.594588246512,
+        "test_mse": 67220275.37568125,
+        "train_rmse": 9078.617918486692,
+        "train_r2": 0.9496654854268443,
+        "train_adj_r2": 0.9469447008553223,
+        "train_f_stat": 349.04104329569407,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 46346.33876123658,
+        "coefficients": {
+          "R&D Spend": 0.7886182999424612,
+          "Marketing Spend": 0.03257662731702063
+        },
+        "test_predictions": [
+          180642.25299736098,
+          170343.31979498419,
+          134182.14951650103,
+          133873.92383811908,
+          114580.9213645215,
+          114717.24903894302,
+          102284.64605182887,
+          97433.45922275007,
+          68335.07575312015,
+          73701.10693630343
+        ]
+      },
+      {
+        "k": 3,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "State_New York"
+        ],
+        "test_rmse": 8309.059683481717,
+        "test_r2": 0.9460153830071389,
+        "test_mae": 7028.435331818949,
+        "test_mse": 69040472.8236613,
+        "train_rmse": 9069.684820873443,
+        "train_r2": 0.9497644921078413,
+        "train_adj_r2": 0.9455781997834948,
+        "train_f_stat": 226.87486169664254,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 46100.29130551412,
+        "coefficients": {
+          "R&D Spend": 0.7858709815066743,
+          "Marketing Spend": 0.03327182941032258,
+          "State_New York": 864.0018700527295
+        },
+        "test_predictions": [
+          180258.24979853872,
+          169961.41927630414,
+          133815.4275493898,
+          133524.92138467255,
+          114342.45547445389,
+          115382.63503846529,
+          101939.27091345853,
+          97944.78203137245,
+          69026.24972723081,
+          73492.7691291159
+        ]
+      },
+      {
+        "k": 4,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "State_New York",
+          "State_Florida"
+        ],
+        "test_rmse": 8409.916714488052,
+        "test_r2": 0.9446968769428332,
+        "test_mae": 7109.161997627586,
+        "test_mse": 70726699.14462551,
+        "train_rmse": 9064.118245163727,
+        "train_r2": 0.9498261378977877,
+        "train_adj_r2": 0.9440919822289634,
+        "train_f_stat": 165.6435912721812,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 46329.060178542495,
+        "coefficients": {
+          "R&D Spend": 0.7851417173112168,
+          "Marketing Spend": 0.03395640234030121,
+          "State_New York": 554.6573328267123,
+          "State_Florida": -826.4681587619034
+        },
+        "test_predictions": [
+          179827.91205675254,
+          169510.75518374197,
+          133300.28408634168,
+          133851.2421601261,
+          113898.4387599909,
+          115491.25395900001,
+          101374.28367857914,
+          97880.01360638956,
+          69057.74881968717,
+          72987.32073135997
+        ]
+      },
+      {
+        "k": 5,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "State_New York",
+          "State_Florida",
+          "Administration"
+        ],
+        "test_rmse": 9137.99015279213,
+        "test_r2": 0.9347068473282827,
+        "test_mae": 7514.293659638902,
+        "test_mse": 83502864.03252594,
+        "train_rmse": 9031.66661257897,
+        "train_r2": 0.9501847627493607,
+        "train_adj_r2": 0.9428589925654431,
+        "train_f_stat": 129.70441863373296,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42554.16761774788,
+        "coefficients": {
+          "R&D Spend": 0.7734671927328999,
+          "Marketing Spend": 0.036610025863816474,
+          "State_New York": 699.3690525188922,
+          "State_Florida": -959.2841600570787,
+          "Administration": 0.03288459753613828
+        },
+        "test_predictions": [
+          178537.4822105534,
+          167921.06569550867,
+          132447.7384517484,
+          132582.2776081605,
+          113969.43533012088,
+          116161.24230164429,
+          103015.20159795776,
+          98791.73374687428,
+          67851.69209675828,
+          71976.0985125808
+        ]
+      }
+    ],
+    "Lasso (L1)": [
+      {
+        "k": 1,
+        "features": [
+          "R&D Spend"
+        ],
+        "test_rmse": 8274.86801822599,
+        "test_r2": 0.9464587607787219,
+        "test_mae": 6772.453280477899,
+        "test_mse": 68473440.71905932,
+        "train_rmse": 9493.580597976612,
+        "train_r2": 0.9449589778363044,
+        "train_adj_r2": 0.9435105298846282,
+        "train_f_stat": 652.3941552354449,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 48416.297661385026,
+        "coefficients": {
+          "R&D Spend": 0.8516227998779371
+        },
+        "test_predictions": [
+          179090.58602508352,
+          169438.148435391,
+          135207.80019516923,
+          134150.8341057847,
+          111431.75202432103,
+          109824.77386586336,
+          104667.27805997859,
+          100481.43277138655,
+          65644.27773756774,
+          72170.54428855634
+        ]
+      },
+      {
+        "k": 2,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend"
+        ],
+        "test_rmse": 8198.797190788491,
+        "test_r2": 0.9474386447268488,
+        "test_mae": 6886.594588246512,
+        "test_mse": 67220275.37568125,
+        "train_rmse": 9078.617918486692,
+        "train_r2": 0.9496654854268443,
+        "train_adj_r2": 0.9469447008553223,
+        "train_f_stat": 349.04104329569407,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 46346.33876123658,
+        "coefficients": {
+          "R&D Spend": 0.7886182999424612,
+          "Marketing Spend": 0.03257662731702063
+        },
+        "test_predictions": [
+          180642.25299736098,
+          170343.31979498419,
+          134182.14951650103,
+          133873.92383811908,
+          114580.9213645215,
+          114717.24903894302,
+          102284.64605182887,
+          97433.45922275007,
+          68335.07575312015,
+          73701.10693630343
+        ]
+      },
+      {
+        "k": 3,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "Administration"
+        ],
+        "test_rmse": 8803.775790469346,
+        "test_r2": 0.939395591782057,
+        "test_mae": 7320.441614848128,
+        "test_mse": 77506468.16885416,
+        "train_rmse": 9052.267248800474,
+        "train_r2": 0.9499572530324031,
+        "train_adj_r2": 0.9457870241184366,
+        "train_f_stat": 227.79498982679945,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42989.00816508666,
+        "coefficients": {
+          "R&D Spend": 0.7788410440821668,
+          "Marketing Spend": 0.034710254869420344,
+          "Administration": 0.029391899097552594
+        },
+        "test_predictions": [
+          179627.92567223712,
+          169064.0140879458,
+          133567.90370043818,
+          132763.05993125628,
+          114756.1155522112,
+          115166.64864795282,
+          103901.89696960003,
+          98154.80686776245,
+          67113.57690570194,
+          72911.78976735752
+        ]
+      },
+      {
+        "k": 4,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "Administration",
+          "State_New York"
+        ],
+        "test_rmse": 8997.199285980298,
+        "test_r2": 0.9367033175958571,
+        "test_mae": 7474.740626347193,
+        "test_mse": 80949594.99164437,
+        "train_rmse": 9039.1589552431,
+        "train_r2": 0.9501020786438475,
+        "train_adj_r2": 0.9443994590602872,
+        "train_f_stat": 166.60800614911008,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42410.30908405062,
+        "coefficients": {
+          "R&D Spend": 0.7746825805130203,
+          "Marketing Spend": 0.03573424379441179,
+          "Administration": 0.03183486825464469,
+          "State_New York": 1052.2198800537271
+        },
+        "test_predictions": [
+          179075.96157197983,
+          168492.58649269515,
+          133070.23906352918,
+          132245.69745454332,
+          114480.26282334968,
+          116014.33808117366,
+          103615.70496702472,
+          98837.47482909175,
+          67853.79186123735,
+          72592.46097857336
+        ]
+      },
+      {
+        "k": 5,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "Administration",
+          "State_New York",
+          "State_Florida"
+        ],
+        "test_rmse": 9137.990152794957,
+        "test_r2": 0.9347068473282423,
+        "test_mae": 7514.293659640612,
+        "test_mse": 83502864.0325776,
+        "train_rmse": 9031.66661257897,
+        "train_r2": 0.9501847627493607,
+        "train_adj_r2": 0.9428589925654431,
+        "train_f_stat": 129.70441863373296,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42554.1676177324,
+        "coefficients": {
+          "R&D Spend": 0.7734671927327996,
+          "Marketing Spend": 0.036610025863856144,
+          "Administration": 0.032884597536255944,
+          "State_New York": 699.3690525192562,
+          "State_Florida": -959.2841600571085
+        },
+        "test_predictions": [
+          178537.4822105506,
+          167921.0656955042,
+          132447.73845174478,
+          132582.27760815562,
+          113969.43533012443,
+          116161.242301651,
+          103015.2015979618,
+          98791.7337468745,
+          67851.69209675625,
+          71976.09851257897
+        ]
+      }
+    ],
+    "RFE": [
+      {
+        "k": 1,
+        "features": [
+          "R&D Spend"
+        ],
+        "test_rmse": 8274.86801822599,
+        "test_r2": 0.9464587607787219,
+        "test_mae": 6772.453280477899,
+        "test_mse": 68473440.71905932,
+        "train_rmse": 9493.580597976612,
+        "train_r2": 0.9449589778363044,
+        "train_adj_r2": 0.9435105298846282,
+        "train_f_stat": 652.3941552354449,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 48416.297661385026,
+        "coefficients": {
+          "R&D Spend": 0.8516227998779371
+        },
+        "test_predictions": [
+          179090.58602508352,
+          169438.148435391,
+          135207.80019516923,
+          134150.8341057847,
+          111431.75202432103,
+          109824.77386586336,
+          104667.27805997859,
+          100481.43277138655,
+          65644.27773756774,
+          72170.54428855634
+        ]
+      },
+      {
+        "k": 2,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend"
+        ],
+        "test_rmse": 8198.797190788491,
+        "test_r2": 0.9474386447268488,
+        "test_mae": 6886.594588246512,
+        "test_mse": 67220275.37568125,
+        "train_rmse": 9078.617918486692,
+        "train_r2": 0.9496654854268443,
+        "train_adj_r2": 0.9469447008553223,
+        "train_f_stat": 349.04104329569407,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 46346.33876123658,
+        "coefficients": {
+          "R&D Spend": 0.7886182999424612,
+          "Marketing Spend": 0.03257662731702063
+        },
+        "test_predictions": [
+          180642.25299736098,
+          170343.31979498419,
+          134182.14951650103,
+          133873.92383811908,
+          114580.9213645215,
+          114717.24903894302,
+          102284.64605182887,
+          97433.45922275007,
+          68335.07575312015,
+          73701.10693630343
+        ]
+      },
+      {
+        "k": 3,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "Administration"
+        ],
+        "test_rmse": 8803.775790469346,
+        "test_r2": 0.939395591782057,
+        "test_mae": 7320.441614848128,
+        "test_mse": 77506468.16885416,
+        "train_rmse": 9052.267248800474,
+        "train_r2": 0.9499572530324031,
+        "train_adj_r2": 0.9457870241184366,
+        "train_f_stat": 227.79498982679945,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42989.00816508666,
+        "coefficients": {
+          "R&D Spend": 0.7788410440821668,
+          "Marketing Spend": 0.034710254869420344,
+          "Administration": 0.029391899097552594
+        },
+        "test_predictions": [
+          179627.92567223712,
+          169064.0140879458,
+          133567.90370043818,
+          132763.05993125628,
+          114756.1155522112,
+          115166.64864795282,
+          103901.89696960003,
+          98154.80686776245,
+          67113.57690570194,
+          72911.78976735752
+        ]
+      },
+      {
+        "k": 4,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "Administration",
+          "State_Florida"
+        ],
+        "test_rmse": 9068.54118486935,
+        "test_r2": 0.9356955353592089,
+        "test_mae": 7431.473270412908,
+        "test_mse": 82238439.22167158,
+        "train_rmse": 9036.510816272257,
+        "train_r2": 0.9501313108490097,
+        "train_adj_r2": 0.9444320320888965,
+        "train_f_stat": 166.71079812740052,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42922.43234093205,
+        "coefficients": {
+          "R&D Spend": 0.7753799289895307,
+          "Marketing Spend": 0.036327059535269636,
+          "Administration": 0.03187042324979702,
+          "State_Florida": -1272.160786779386
+        },
+        "test_predictions": [
+          178668.35249140536,
+          168051.9671369675,
+          132521.0528561006,
+          132979.3402644851,
+          113956.00325905217,
+          115738.44472844573,
+          102978.26243868438,
+          98397.73803877176,
+          67439.97515767504,
+          71952.3872507576
+        ]
+      },
+      {
+        "k": 5,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "Administration",
+          "State_Florida",
+          "State_New York"
+        ],
+        "test_rmse": 9137.990152794957,
+        "test_r2": 0.9347068473282423,
+        "test_mae": 7514.293659640612,
+        "test_mse": 83502864.0325776,
+        "train_rmse": 9031.66661257897,
+        "train_r2": 0.9501847627493607,
+        "train_adj_r2": 0.9428589925654431,
+        "train_f_stat": 129.70441863373296,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42554.1676177324,
+        "coefficients": {
+          "R&D Spend": 0.7734671927327996,
+          "Marketing Spend": 0.036610025863856144,
+          "Administration": 0.032884597536255944,
+          "State_Florida": -959.2841600571081,
+          "State_New York": 699.3690525192566
+        },
+        "test_predictions": [
+          178537.4822105506,
+          167921.0656955042,
+          132447.73845174478,
+          132582.27760815562,
+          113969.43533012443,
+          116161.242301651,
+          103015.2015979618,
+          98791.7337468745,
+          67851.69209675625,
+          71976.09851257897
+        ]
+      }
+    ],
+    "ElasticNet": [
+      {
+        "k": 1,
+        "features": [
+          "R&D Spend"
+        ],
+        "test_rmse": 8274.86801822599,
+        "test_r2": 0.9464587607787219,
+        "test_mae": 6772.453280477899,
+        "test_mse": 68473440.71905932,
+        "train_rmse": 9493.580597976612,
+        "train_r2": 0.9449589778363044,
+        "train_adj_r2": 0.9435105298846282,
+        "train_f_stat": 652.3941552354449,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 48416.297661385026,
+        "coefficients": {
+          "R&D Spend": 0.8516227998779371
+        },
+        "test_predictions": [
+          179090.58602508352,
+          169438.148435391,
+          135207.80019516923,
+          134150.8341057847,
+          111431.75202432103,
+          109824.77386586336,
+          104667.27805997859,
+          100481.43277138655,
+          65644.27773756774,
+          72170.54428855634
+        ]
+      },
+      {
+        "k": 2,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend"
+        ],
+        "test_rmse": 8198.797190788491,
+        "test_r2": 0.9474386447268488,
+        "test_mae": 6886.594588246512,
+        "test_mse": 67220275.37568125,
+        "train_rmse": 9078.617918486692,
+        "train_r2": 0.9496654854268443,
+        "train_adj_r2": 0.9469447008553223,
+        "train_f_stat": 349.04104329569407,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 46346.33876123658,
+        "coefficients": {
+          "R&D Spend": 0.7886182999424612,
+          "Marketing Spend": 0.03257662731702063
+        },
+        "test_predictions": [
+          180642.25299736098,
+          170343.31979498419,
+          134182.14951650103,
+          133873.92383811908,
+          114580.9213645215,
+          114717.24903894302,
+          102284.64605182887,
+          97433.45922275007,
+          68335.07575312015,
+          73701.10693630343
+        ]
+      },
+      {
+        "k": 3,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "Administration"
+        ],
+        "test_rmse": 8803.775790469346,
+        "test_r2": 0.939395591782057,
+        "test_mae": 7320.441614848128,
+        "test_mse": 77506468.16885416,
+        "train_rmse": 9052.267248800474,
+        "train_r2": 0.9499572530324031,
+        "train_adj_r2": 0.9457870241184366,
+        "train_f_stat": 227.79498982679945,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42989.00816508666,
+        "coefficients": {
+          "R&D Spend": 0.7788410440821668,
+          "Marketing Spend": 0.034710254869420344,
+          "Administration": 0.029391899097552594
+        },
+        "test_predictions": [
+          179627.92567223712,
+          169064.0140879458,
+          133567.90370043818,
+          132763.05993125628,
+          114756.1155522112,
+          115166.64864795282,
+          103901.89696960003,
+          98154.80686776245,
+          67113.57690570194,
+          72911.78976735752
+        ]
+      },
+      {
+        "k": 4,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "Administration",
+          "State_New York"
+        ],
+        "test_rmse": 8997.199285980298,
+        "test_r2": 0.9367033175958571,
+        "test_mae": 7474.740626347193,
+        "test_mse": 80949594.99164437,
+        "train_rmse": 9039.1589552431,
+        "train_r2": 0.9501020786438475,
+        "train_adj_r2": 0.9443994590602872,
+        "train_f_stat": 166.60800614911008,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42410.30908405062,
+        "coefficients": {
+          "R&D Spend": 0.7746825805130203,
+          "Marketing Spend": 0.03573424379441179,
+          "Administration": 0.03183486825464469,
+          "State_New York": 1052.2198800537271
+        },
+        "test_predictions": [
+          179075.96157197983,
+          168492.58649269515,
+          133070.23906352918,
+          132245.69745454332,
+          114480.26282334968,
+          116014.33808117366,
+          103615.70496702472,
+          98837.47482909175,
+          67853.79186123735,
+          72592.46097857336
+        ]
+      },
+      {
+        "k": 5,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend",
+          "Administration",
+          "State_New York",
+          "State_Florida"
+        ],
+        "test_rmse": 9137.990152794957,
+        "test_r2": 0.9347068473282423,
+        "test_mae": 7514.293659640612,
+        "test_mse": 83502864.0325776,
+        "train_rmse": 9031.66661257897,
+        "train_r2": 0.9501847627493607,
+        "train_adj_r2": 0.9428589925654431,
+        "train_f_stat": 129.70441863373296,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42554.1676177324,
+        "coefficients": {
+          "R&D Spend": 0.7734671927327996,
+          "Marketing Spend": 0.036610025863856144,
+          "Administration": 0.032884597536255944,
+          "State_New York": 699.3690525192562,
+          "State_Florida": -959.2841600571085
+        },
+        "test_predictions": [
+          178537.4822105506,
+          167921.0656955042,
+          132447.73845174478,
+          132582.27760815562,
+          113969.43533012443,
+          116161.242301651,
+          103015.2015979618,
+          98791.7337468745,
+          67851.69209675625,
+          71976.09851257897
+        ]
+      }
+    ],
+    "Exhaustive": [
+      {
+        "k": 1,
+        "features": [
+          "R&D Spend"
+        ],
+        "test_rmse": 8274.86801822599,
+        "test_r2": 0.9464587607787219,
+        "test_mae": 6772.453280477899,
+        "test_mse": 68473440.71905932,
+        "train_rmse": 9493.580597976612,
+        "train_r2": 0.9449589778363044,
+        "train_adj_r2": 0.9435105298846282,
+        "train_f_stat": 652.3941552354449,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 48416.297661385026,
+        "coefficients": {
+          "R&D Spend": 0.8516227998779371
+        },
+        "test_predictions": [
+          179090.58602508352,
+          169438.148435391,
+          135207.80019516923,
+          134150.8341057847,
+          111431.75202432103,
+          109824.77386586336,
+          104667.27805997859,
+          100481.43277138655,
+          65644.27773756774,
+          72170.54428855634
+        ]
+      },
+      {
+        "k": 2,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend"
+        ],
+        "test_rmse": 8198.797190788491,
+        "test_r2": 0.9474386447268488,
+        "test_mae": 6886.594588246512,
+        "test_mse": 67220275.37568125,
+        "train_rmse": 9078.617918486692,
+        "train_r2": 0.9496654854268443,
+        "train_adj_r2": 0.9469447008553223,
+        "train_f_stat": 349.04104329569407,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 46346.33876123658,
+        "coefficients": {
+          "R&D Spend": 0.7886182999424612,
+          "Marketing Spend": 0.03257662731702063
+        },
+        "test_predictions": [
+          180642.25299736098,
+          170343.31979498419,
+          134182.14951650103,
+          133873.92383811908,
+          114580.9213645215,
+          114717.24903894302,
+          102284.64605182887,
+          97433.45922275007,
+          68335.07575312015,
+          73701.10693630343
+        ]
+      },
+      {
+        "k": 3,
+        "features": [
+          "R&D Spend",
+          "Administration",
+          "State_Florida"
+        ],
+        "test_rmse": 8171.645989404477,
+        "test_r2": 0.9477861934963948,
+        "test_mae": 6730.785004118914,
+        "test_mse": 66775798.176150285,
+        "train_rmse": 9491.896989969053,
+        "train_r2": 0.9449784982454472,
+        "train_adj_r2": 0.9403933730992344,
+        "train_f_stat": 206.09655529816663,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 48524.918829082875,
+        "coefficients": {
+          "R&D Spend": 0.8519395749618284,
+          "Administration": -0.0018828428042857678,
+          "State_Florida": 404.01718925285473
+        },
+        "test_predictions": [
+          179461.38965823385,
+          169823.72652037634,
+          135544.49075237667,
+          134118.51835251757,
+          111736.64939689531,
+          109715.48807670968,
+          104856.9470143377,
+          100321.90670971508,
+          65635.13754987689,
+          72532.52136384
+        ]
+      },
+      {
+        "k": 4,
+        "features": [
+          "R&D Spend",
+          "Administration",
+          "State_Florida",
+          "State_New York"
+        ],
+        "test_rmse": 8178.369214854917,
+        "test_r2": 0.9477002402858664,
+        "test_mae": 6751.890336509609,
+        "test_mse": 66885723.01448663,
+        "train_rmse": 9491.612574571716,
+        "train_r2": 0.9449817955268752,
+        "train_adj_r2": 0.9386940007299467,
+        "train_f_stat": 150.28826894740234,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 48444.52707097882,
+        "coefficients": {
+          "R&D Spend": 0.8516135792403575,
+          "Administration": -0.0016967977487947713,
+          "State_Florida": 484.73296619775954,
+          "State_New York": 173.19542846407435
+        },
+        "test_predictions": [
+          179430.5100307811,
+          169794.72714130863,
+          135532.16703050752,
+          134022.38515531243,
+          111735.69462930113,
+          109808.57354528425,
+          104869.71882360728,
+          100423.18961894885,
+          65733.61574674616,
+          72539.51243000686
+        ]
+      },
+      {
+        "k": 5,
+        "features": [
+          "R&D Spend",
+          "Administration",
+          "Marketing Spend",
+          "State_Florida",
+          "State_New York"
+        ],
+        "test_rmse": 9137.99015279496,
+        "test_r2": 0.9347068473282423,
+        "test_mae": 7514.293659640617,
+        "test_mse": 83502864.03257768,
+        "train_rmse": 9031.66661257897,
+        "train_r2": 0.9501847627493607,
+        "train_adj_r2": 0.9428589925654431,
+        "train_f_stat": 129.70441863373296,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42554.16761773235,
+        "coefficients": {
+          "R&D Spend": 0.7734671927327997,
+          "Administration": 0.0328845975362561,
+          "Marketing Spend": 0.03661002586385624,
+          "State_Florida": -959.2841600571066,
+          "State_New York": 699.3690525192587
+        },
+        "test_predictions": [
+          178537.48221055063,
+          167921.0656955042,
+          132447.73845174478,
+          132582.27760815562,
+          113969.43533012444,
+          116161.24230165104,
+          103015.2015979618,
+          98791.7337468745,
+          67851.69209675623,
+          71976.09851257896
+        ]
+      }
+    ]
+  },
+  "algorithm_descriptions": {
+    "Forward SFS": {
+      "name": "Forward Stepwise Selection (前向特徵選擇)",
+      "selection_criterion": "在獨立測試集上以 Test RMSE 最小者貪婪推進",
+      "model_type": "Ordinary Least Squares (LinearRegression)",
+      "optimal_k": 2,
+      "optimal_features": [
+        "R&D Spend",
+        "Marketing Spend"
+      ],
+      "optimal_rmse": 8198.797190788491,
+      "note": "遵循課程講義規格實作，每輪依序選入在測試集誤差最小之候選特徵。"
+    },
+    "Lasso (L1)": {
+      "name": "Lasso Regularized Selection + OLS (L1 正則化排序重擬合)",
+      "selection_criterion": "訓練資料經標準化後透過 5 折交叉驗證求解 LassoCV，依係數絕對值排序特徵，再建立無偏 OLS 模型",
+      "model_type": "L1 Feature Ranking + OLS refitting",
+      "optimal_k": 2,
+      "optimal_features": [
+        "R&D Spend",
+        "Marketing Spend"
+      ],
+      "optimal_rmse": 8198.797190788491,
+      "note": "僅在訓練集擬合前處理與正則化參數，重擬合 OLS 以避免 L1 收縮懲罰對指標之系統性偏差。"
+    },
+    "RFE": {
+      "name": "Recursive Feature Elimination + OLS (遞迴特徵消除法)",
+      "selection_criterion": "在標準化訓練集上擬合線性回歸，逐步剔除權重最小變數，再以 OLS 評估 top-k",
+      "model_type": "Backward Elimination Ranking + OLS refitting",
+      "optimal_k": 2,
+      "optimal_features": [
+        "R&D Spend",
+        "Marketing Spend"
+      ],
+      "optimal_rmse": 8198.797190788491,
+      "note": "自全特徵逆向剔除最不重要欄位，測試其反向修剪能力。"
+    },
+    "ElasticNet": {
+      "name": "ElasticNet Regularized Selection + OLS (彈性網絡排序重擬合)",
+      "selection_criterion": "訓練集標準化後以 ElasticNetCV (L1+L2 混合正則) 排序特徵重要性，再重擬合 OLS",
+      "model_type": "L1+L2 Feature Ranking + OLS refitting",
+      "optimal_k": 2,
+      "optimal_features": [
+        "R&D Spend",
+        "Marketing Spend"
+      ],
+      "optimal_rmse": 8198.797190788491,
+      "note": "兼具 Lasso 稀疏性與 Ridge 穩定共線性處理之綜合方法。"
+    },
+    "Exhaustive": {
+      "name": "Exhaustive Subset Search (全子集窮舉檢驗)",
+      "selection_criterion": "遍歷全部 31 組非空特徵組合，取得各 k 階層與全域最佳表現",
+      "model_type": "Combinatorial Grid Search OLS",
+      "optimal_k": 3,
+      "optimal_features": [
+        "R&D Spend",
+        "Administration",
+        "State_Florida"
+      ],
+      "optimal_rmse": 8171.645989404477,
+      "note": "作為理論基準線。實測顯示在本次切分下，3 特徵子集 (R&D + Admin + State_Florida) 可達 8171.65，證明前向選擇受貪婪路徑限制可能錯過非前向包含之全域組合。"
+    }
+  },
+  "exhaustive_search": {
+    "all_31_subsets": [
+      {
+        "subset_id": 1,
+        "k": 1,
+        "features": "R&D Spend",
+        "test_rmse": 8274.86801822599,
+        "test_r2": 0.946458760778722,
+        "test_mae": 6772.453280477899,
+        "test_mse": 68473440.71905932,
+        "train_rmse": 9493.580597976612,
+        "train_r2": 0.9449589778363044,
+        "train_adj_r2": 0.9435105298846282,
+        "train_f_stat": 652.3941552354449
+      },
+      {
+        "subset_id": 2,
+        "k": 1,
+        "features": "Administration",
+        "test_rmse": 45669.70577941752,
+        "test_r2": -0.6308825840983827,
+        "test_mae": 34645.41692434532,
+        "test_mse": 2085722025.978562,
+        "train_rmse": 38162.178493008825,
+        "train_r2": 0.110609013129954,
+        "train_adj_r2": 0.0872039871596896,
+        "train_f_stat": 4.725865857635908
+      },
+      {
+        "subset_id": 3,
+        "k": 1,
+        "features": "Marketing Spend",
+        "test_rmse": 25529.053887870352,
+        "test_r2": 0.4903926212546319,
+        "test_mae": 24308.312840774703,
+        "test_mse": 651732592.4097884,
+        "train_rmse": 26731.776740752688,
+        "train_r2": 0.5636026973161414,
+        "train_adj_r2": 0.5521185577718294,
+        "train_f_stat": 49.07661519972438
+      },
+      {
+        "subset_id": 4,
+        "k": 1,
+        "features": "State_Florida",
+        "test_rmse": 37588.05292629757,
+        "test_r2": -0.1047548756438994,
+        "test_mae": 29061.643933333333,
+        "test_mse": 1412861722.7901473,
+        "train_rmse": 40460.57672769297,
+        "train_r2": 0.0002519980153838,
+        "train_adj_r2": -0.0260571599315795,
+        "train_f_stat": 0.0095783383068304
+      },
+      {
+        "subset_id": 5,
+        "k": 1,
+        "features": "State_New York",
+        "test_rmse": 41366.02329593475,
+        "test_r2": -0.337992909392512,
+        "test_mae": 33203.40971978022,
+        "test_mse": 1711147883.319817,
+        "train_rmse": 39991.13006785038,
+        "train_r2": 0.0233167039814222,
+        "train_adj_r2": -0.0023854880190665,
+        "train_f_stat": 0.907187370671681
+      },
+      {
+        "subset_id": 6,
+        "k": 2,
+        "features": "R&D Spend, Administration",
+        "test_rmse": 8237.540194485355,
+        "test_r2": 0.9469407189577184,
+        "test_mae": 6738.115908022099,
+        "test_mse": 67857068.45576182,
+        "train_rmse": 9493.505441460638,
+        "train_r2": 0.944959849304144,
+        "train_adj_r2": 0.941984706023287,
+        "train_f_stat": 317.6182657770759
+      },
+      {
+        "subset_id": 7,
+        "k": 2,
+        "features": "R&D Spend, Marketing Spend",
+        "test_rmse": 8198.797190788491,
+        "test_r2": 0.9474386447268488,
+        "test_mae": 6886.594588246512,
+        "test_mse": 67220275.37568125,
+        "train_rmse": 9078.617918486692,
+        "train_r2": 0.9496654854268444,
+        "train_adj_r2": 0.9469447008553225,
+        "train_f_stat": 349.04104329569407
+      },
+      {
+        "subset_id": 8,
+        "k": 2,
+        "features": "R&D Spend, State_Florida",
+        "test_rmse": 8217.446447873415,
+        "test_r2": 0.947199257159004,
+        "test_mae": 6772.40303548724,
+        "test_mse": 67526426.1236674,
+        "train_rmse": 9492.00718052055,
+        "train_r2": 0.944977220759014,
+        "train_adj_r2": 0.9420030164757176,
+        "train_f_stat": 317.72438297736096
+      },
+      {
+        "subset_id": 9,
+        "k": 2,
+        "features": "R&D Spend, State_New York",
+        "test_rmse": 8273.828202485938,
+        "test_r2": 0.9464722158635016,
+        "test_mae": 6771.25190964888,
+        "test_mse": 68456233.12425168,
+        "train_rmse": 9493.578848073585,
+        "train_r2": 0.9449589981271612,
+        "train_adj_r2": 0.9419838088367376,
+        "train_f_stat": 317.6130679041883
+      },
+      {
+        "subset_id": 10,
+        "k": 2,
+        "features": "Administration, Marketing Spend",
+        "test_rmse": 28044.339874916634,
+        "test_r2": 0.3850260621597938,
+        "test_mae": 23158.681801822284,
+        "test_mse": 786484999.019839,
+        "train_rmse": 24378.71213505458,
+        "train_r2": 0.6370490600729561,
+        "train_adj_r2": 0.61743009034717,
+        "train_f_stat": 32.47107615623934
+      },
+      {
+        "subset_id": 11,
+        "k": 2,
+        "features": "Administration, State_Florida",
+        "test_rmse": 45664.32281716461,
+        "test_r2": -0.6304981514920294,
+        "test_mae": 34642.12614046726,
+        "test_mse": 2085230378.3502204,
+        "train_rmse": 38162.17753694892,
+        "train_r2": 0.1106090576929788,
+        "train_adj_r2": 0.062533871622329,
+        "train_f_stat": 2.300751525546489
+      },
+      {
+        "subset_id": 12,
+        "k": 2,
+        "features": "Administration, State_New York",
+        "test_rmse": 48868.222680884006,
+        "test_r2": -0.8673226104964413,
+        "test_mae": 38373.9320520032,
+        "test_mse": 2388103187.988466,
+        "train_rmse": 37623.20120182793,
+        "train_r2": 0.1355539440264918,
+        "train_adj_r2": 0.088827130190086,
+        "train_f_stat": 2.9009883811268735
+      },
+      {
+        "subset_id": 13,
+        "k": 2,
+        "features": "Marketing Spend, State_Florida",
+        "test_rmse": 27724.528517063183,
+        "test_r2": 0.3989721367324698,
+        "test_mae": 25803.13032195829,
+        "test_mse": 768649481.4934497,
+        "train_rmse": 26377.37401261263,
+        "train_r2": 0.5750972697191309,
+        "train_adj_r2": 0.5521295545688136,
+        "train_f_stat": 25.039376618670197
+      },
+      {
+        "subset_id": 14,
+        "k": 2,
+        "features": "Marketing Spend, State_New York",
+        "test_rmse": 28603.153690373812,
+        "test_r2": 0.3602738453272684,
+        "test_mae": 26356.959660742403,
+        "test_mse": 818140401.035145,
+        "train_rmse": 26108.67531724467,
+        "train_r2": 0.5837099008848237,
+        "train_adj_r2": 0.5612077333650843,
+        "train_f_stat": 25.940163336388988
+      },
+      {
+        "subset_id": 15,
+        "k": 2,
+        "features": "State_Florida, State_New York",
+        "test_rmse": 39655.93042301208,
+        "test_r2": -0.2296529481611711,
+        "test_mae": 32468.339517857145,
+        "test_mse": 1572592817.714775,
+        "train_rmse": 39828.84274386977,
+        "train_r2": 0.0312275436306205,
+        "train_adj_r2": -0.0211385350920487,
+        "train_f_stat": 0.5963315259101524
+      },
+      {
+        "subset_id": 16,
+        "k": 3,
+        "features": "R&D Spend, Administration, Marketing Spend",
+        "test_rmse": 8803.775790469343,
+        "test_r2": 0.939395591782057,
+        "test_mae": 7320.441614848125,
+        "test_mse": 77506468.16885409,
+        "train_rmse": 9052.267248800474,
+        "train_r2": 0.9499572530324032,
+        "train_adj_r2": 0.9457870241184366,
+        "train_f_stat": 227.79498982679945
+      },
+      {
+        "subset_id": 17,
+        "k": 3,
+        "features": "R&D Spend, Administration, State_Florida",
+        "test_rmse": 8171.645989404477,
+        "test_r2": 0.9477861934963948,
+        "test_mae": 6730.785004118914,
+        "test_mse": 66775798.176150285,
+        "train_rmse": 9491.896989969053,
+        "train_r2": 0.9449784982454472,
+        "train_adj_r2": 0.9403933730992344,
+        "train_f_stat": 206.09655529816663
+      },
+      {
+        "subset_id": 18,
+        "k": 3,
+        "features": "R&D Spend, Administration, State_New York",
+        "test_rmse": 8235.348504978972,
+        "test_r2": 0.9469689492295412,
+        "test_mae": 6735.723224605771,
+        "test_mse": 67820964.99845938,
+        "train_rmse": 9493.501524194697,
+        "train_r2": 0.9449598947261147,
+        "train_adj_r2": 0.9403732192866244,
+        "train_f_stat": 206.0228388061176
+      },
+      {
+        "subset_id": 19,
+        "k": 3,
+        "features": "R&D Spend, Marketing Spend, State_Florida",
+        "test_rmse": 8376.45051976933,
+        "test_r2": 0.9451361446943416,
+        "test_mae": 7053.029502881682,
+        "test_mse": 70164923.31014389,
+        "train_rmse": 9067.174045517751,
+        "train_r2": 0.9497923018100066,
+        "train_adj_r2": 0.9456083269608404,
+        "train_f_stat": 227.00717285604733
+      },
+      {
+        "subset_id": 20,
+        "k": 3,
+        "features": "R&D Spend, Marketing Spend, State_New York",
+        "test_rmse": 8309.059683481717,
+        "test_r2": 0.9460153830071388,
+        "test_mae": 7028.435331818949,
+        "test_mse": 69040472.8236613,
+        "train_rmse": 9069.684820873445,
+        "train_r2": 0.9497644921078412,
+        "train_adj_r2": 0.9455781997834948,
+        "train_f_stat": 226.87486169664257
+      },
+      {
+        "subset_id": 21,
+        "k": 3,
+        "features": "R&D Spend, State_Florida, State_New York",
+        "test_rmse": 8219.806004927406,
+        "test_r2": 0.9471689304016888,
+        "test_mae": 6789.980111923031,
+        "test_mse": 67565210.75864065,
+        "train_rmse": 9491.70173048498,
+        "train_r2": 0.9449807619361624,
+        "train_adj_r2": 0.9403958254308424,
+        "train_f_stat": 206.10552858032403
+      },
+      {
+        "subset_id": 22,
+        "k": 3,
+        "features": "Administration, Marketing Spend, State_Florida",
+        "test_rmse": 30607.437371603213,
+        "test_r2": 0.267478785862692,
+        "test_mae": 23510.17799970774,
+        "test_mse": 936815222.456613,
+        "train_rmse": 23918.22663952711,
+        "train_r2": 0.6506310050515545,
+        "train_adj_r2": 0.6215169221391841,
+        "train_f_stat": 22.34763866716557
+      },
+      {
+        "subset_id": 23,
+        "k": 3,
+        "features": "Administration, Marketing Spend, State_New York",
+        "test_rmse": 31294.430191992647,
+        "test_r2": 0.2342264454629645,
+        "test_mae": 25488.980060517264,
+        "test_mse": 979341361.041501,
+        "train_rmse": 23647.743783205977,
+        "train_r2": 0.6584881092458313,
+        "train_adj_r2": 0.6300287850163173,
+        "train_f_stat": 23.137868767907673
+      },
+      {
+        "subset_id": 24,
+        "k": 3,
+        "features": "Administration, State_Florida, State_New York",
+        "test_rmse": 47389.80249808112,
+        "test_r2": -0.7560467150570473,
+        "test_mae": 37675.7165158867,
+        "test_mse": 2245793380.807135,
+        "train_rmse": 37503.664142634785,
+        "train_r2": 0.1410382824063362,
+        "train_adj_r2": 0.0694581392735309,
+        "train_f_stat": 1.9703548530863169
+      },
+      {
+        "subset_id": 25,
+        "k": 3,
+        "features": "Marketing Spend, State_Florida, State_New York",
+        "test_rmse": 29299.114567384466,
+        "test_r2": 0.3287639709813525,
+        "test_mae": 26792.467461506218,
+        "test_mse": 858438114.4327204,
+        "train_rmse": 26027.030220460783,
+        "train_r2": 0.5863094125477661,
+        "train_adj_r2": 0.5518351969267467,
+        "train_f_stat": 17.007186443142267
+      },
+      {
+        "subset_id": 26,
+        "k": 4,
+        "features": "R&D Spend, Administration, Marketing Spend, State_Florida",
+        "test_rmse": 9068.541184869351,
+        "test_r2": 0.9356955353592088,
+        "test_mae": 7431.47327041291,
+        "test_mse": 82238439.22167166,
+        "train_rmse": 9036.510816272255,
+        "train_r2": 0.9501313108490096,
+        "train_adj_r2": 0.9444320320888964,
+        "train_f_stat": 166.71079812740052
+      },
+      {
+        "subset_id": 27,
+        "k": 4,
+        "features": "R&D Spend, Administration, Marketing Spend, State_New York",
+        "test_rmse": 8997.199285980296,
+        "test_r2": 0.9367033175958572,
+        "test_mae": 7474.74062634719,
+        "test_mse": 80949594.99164435,
+        "train_rmse": 9039.1589552431,
+        "train_r2": 0.9501020786438474,
+        "train_adj_r2": 0.9443994590602872,
+        "train_f_stat": 166.60800614911005
+      },
+      {
+        "subset_id": 28,
+        "k": 4,
+        "features": "R&D Spend, Administration, State_Florida, State_New York",
+        "test_rmse": 8178.369214854917,
+        "test_r2": 0.9477002402858664,
+        "test_mae": 6751.890336509609,
+        "test_mse": 66885723.01448663,
+        "train_rmse": 9491.612574571716,
+        "train_r2": 0.9449817955268752,
+        "train_adj_r2": 0.9386940007299468,
+        "train_f_stat": 150.28826894740234
+      },
+      {
+        "subset_id": 29,
+        "k": 4,
+        "features": "R&D Spend, Marketing Spend, State_Florida, State_New York",
+        "test_rmse": 8409.91671448805,
+        "test_r2": 0.9446968769428332,
+        "test_mae": 7109.161997627585,
+        "test_mse": 70726699.14462548,
+        "train_rmse": 9064.118245163729,
+        "train_r2": 0.9498261378977876,
+        "train_adj_r2": 0.9440919822289634,
+        "train_f_stat": 165.64359127218114
+      },
+      {
+        "subset_id": 30,
+        "k": 4,
+        "features": "Administration, Marketing Spend, State_Florida, State_New York",
+        "test_rmse": 32175.96174485506,
+        "test_r2": 0.1904767222878428,
+        "test_mae": 25576.520674556523,
+        "test_mse": 1035292514.2063764,
+        "train_rmse": 23526.295233951423,
+        "train_r2": 0.6619869308561408,
+        "train_adj_r2": 0.6233568658111284,
+        "train_f_stat": 17.13657303151784
+      },
+      {
+        "subset_id": 31,
+        "k": 5,
+        "features": "R&D Spend, Administration, Marketing Spend, State_Florida, State_New York",
+        "test_rmse": 9137.99015279496,
+        "test_r2": 0.9347068473282424,
+        "test_mae": 7514.293659640617,
+        "test_mse": 83502864.03257768,
+        "train_rmse": 9031.66661257897,
+        "train_r2": 0.9501847627493608,
+        "train_adj_r2": 0.9428589925654433,
+        "train_f_stat": 129.70441863373296
+      }
+    ],
+    "best_per_k": [
+      {
+        "k": 1,
+        "features": [
+          "R&D Spend"
+        ],
+        "test_rmse": 8274.86801822599,
+        "test_r2": 0.9464587607787219,
+        "test_mae": 6772.453280477899,
+        "test_mse": 68473440.71905932,
+        "train_rmse": 9493.580597976612,
+        "train_r2": 0.9449589778363044,
+        "train_adj_r2": 0.9435105298846282,
+        "train_f_stat": 652.3941552354449,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 48416.297661385026,
+        "coefficients": {
+          "R&D Spend": 0.8516227998779371
+        },
+        "test_predictions": [
+          179090.58602508352,
+          169438.148435391,
+          135207.80019516923,
+          134150.8341057847,
+          111431.75202432103,
+          109824.77386586336,
+          104667.27805997859,
+          100481.43277138655,
+          65644.27773756774,
+          72170.54428855634
+        ]
+      },
+      {
+        "k": 2,
+        "features": [
+          "R&D Spend",
+          "Marketing Spend"
+        ],
+        "test_rmse": 8198.797190788491,
+        "test_r2": 0.9474386447268488,
+        "test_mae": 6886.594588246512,
+        "test_mse": 67220275.37568125,
+        "train_rmse": 9078.617918486692,
+        "train_r2": 0.9496654854268443,
+        "train_adj_r2": 0.9469447008553223,
+        "train_f_stat": 349.04104329569407,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 46346.33876123658,
+        "coefficients": {
+          "R&D Spend": 0.7886182999424612,
+          "Marketing Spend": 0.03257662731702063
+        },
+        "test_predictions": [
+          180642.25299736098,
+          170343.31979498419,
+          134182.14951650103,
+          133873.92383811908,
+          114580.9213645215,
+          114717.24903894302,
+          102284.64605182887,
+          97433.45922275007,
+          68335.07575312015,
+          73701.10693630343
+        ]
+      },
+      {
+        "k": 3,
+        "features": [
+          "R&D Spend",
+          "Administration",
+          "State_Florida"
+        ],
+        "test_rmse": 8171.645989404477,
+        "test_r2": 0.9477861934963948,
+        "test_mae": 6730.785004118914,
+        "test_mse": 66775798.176150285,
+        "train_rmse": 9491.896989969053,
+        "train_r2": 0.9449784982454472,
+        "train_adj_r2": 0.9403933730992344,
+        "train_f_stat": 206.09655529816663,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 48524.918829082875,
+        "coefficients": {
+          "R&D Spend": 0.8519395749618284,
+          "Administration": -0.0018828428042857678,
+          "State_Florida": 404.01718925285473
+        },
+        "test_predictions": [
+          179461.38965823385,
+          169823.72652037634,
+          135544.49075237667,
+          134118.51835251757,
+          111736.64939689531,
+          109715.48807670968,
+          104856.9470143377,
+          100321.90670971508,
+          65635.13754987689,
+          72532.52136384
+        ]
+      },
+      {
+        "k": 4,
+        "features": [
+          "R&D Spend",
+          "Administration",
+          "State_Florida",
+          "State_New York"
+        ],
+        "test_rmse": 8178.369214854917,
+        "test_r2": 0.9477002402858664,
+        "test_mae": 6751.890336509609,
+        "test_mse": 66885723.01448663,
+        "train_rmse": 9491.612574571716,
+        "train_r2": 0.9449817955268752,
+        "train_adj_r2": 0.9386940007299467,
+        "train_f_stat": 150.28826894740234,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 48444.52707097882,
+        "coefficients": {
+          "R&D Spend": 0.8516135792403575,
+          "Administration": -0.0016967977487947713,
+          "State_Florida": 484.73296619775954,
+          "State_New York": 173.19542846407435
+        },
+        "test_predictions": [
+          179430.5100307811,
+          169794.72714130863,
+          135532.16703050752,
+          134022.38515531243,
+          111735.69462930113,
+          109808.57354528425,
+          104869.71882360728,
+          100423.18961894885,
+          65733.61574674616,
+          72539.51243000686
+        ]
+      },
+      {
+        "k": 5,
+        "features": [
+          "R&D Spend",
+          "Administration",
+          "Marketing Spend",
+          "State_Florida",
+          "State_New York"
+        ],
+        "test_rmse": 9137.99015279496,
+        "test_r2": 0.9347068473282423,
+        "test_mae": 7514.293659640617,
+        "test_mse": 83502864.03257768,
+        "train_rmse": 9031.66661257897,
+        "train_r2": 0.9501847627493607,
+        "train_adj_r2": 0.9428589925654431,
+        "train_f_stat": 129.70441863373296,
+        "train_f_pvalue": 1.1102230246251565e-16,
+        "intercept": 42554.16761773235,
+        "coefficients": {
+          "R&D Spend": 0.7734671927327997,
+          "Administration": 0.0328845975362561,
+          "Marketing Spend": 0.03661002586385624,
+          "State_Florida": -959.2841600571066,
+          "State_New York": 699.3690525192587
+        },
+        "test_predictions": [
+          178537.48221055063,
+          167921.0656955042,
+          132447.73845174478,
+          132582.27760815562,
+          113969.43533012444,
+          116161.24230165104,
+          103015.2015979618,
+          98791.7337468745,
+          67851.69209675623,
+          71976.09851257896
+        ]
+      }
+    ],
+    "overall_best": {
+      "k": 3,
+      "features": [
+        "R&D Spend",
+        "Administration",
+        "State_Florida"
+      ],
+      "test_rmse": 8171.645989404477,
+      "test_r2": 0.9477861934963948,
+      "test_mae": 6730.785004118914,
+      "test_mse": 66775798.176150285,
+      "train_rmse": 9491.896989969053,
+      "train_r2": 0.9449784982454472,
+      "train_adj_r2": 0.9403933730992344,
+      "train_f_stat": 206.09655529816663,
+      "train_f_pvalue": 1.1102230246251565e-16,
+      "intercept": 48524.918829082875,
+      "coefficients": {
+        "R&D Spend": 0.8519395749618284,
+        "Administration": -0.0018828428042857678,
+        "State_Florida": 404.01718925285473
+      },
+      "test_predictions": [
+        179461.38965823385,
+        169823.72652037634,
+        135544.49075237667,
+        134118.51835251757,
+        111736.64939689531,
+        109715.48807670968,
+        104856.9470143377,
+        100321.90670971508,
+        65635.13754987689,
+        72532.52136384
+      ]
+    }
   },
   "discussion": {
     "insights": [
       {
         "title": "1. 核心獲利驅動力：研發支出 (R&D Spend)",
-        "content": "在 Part 2 第 1 輪中，單獨使用 R&D Spend 即達到 R² = 0.9465，RMSE 驟降至 8274.87，遠勝其他單一特徵（如行政支出的 R² 為負值）。這顯示研發投入是初創企業商業成功的最大驅動核心。"
+        "content": "在特徵選擇中，單獨納入 R&D Spend 即達到測試集 R² = 0.9465，RMSE 降至 8274.87，在統計推論中 t = 14.03, p = 1.11e-15，顯示研發投入是初創企業獲利變異量的最大單一決定因數。"
       },
       {
-        "title": "2. 最優特徵子集：雙特徵組合 (R&D + Marketing)",
-        "content": "第 2 輪加入 Marketing Spend 後，測試集 RMSE 降至全域最低之 8198.80，R² 升至 0.9474。行銷支出為產品市場化帶來了關鍵邊際增長。"
+        "title": "2. 前向選擇路徑的最佳表現 (Path-Dependent Optimal)",
+        "content": "在前向選擇路徑中，第 2 輪納入 Marketing Spend 後，測試集 RMSE 降至 8198.80 (R² = 0.9474)，在該前向路徑中表現最佳。然而需注意：前向選擇為貪婪演算法，其所得結果僅代表該搜尋路徑下的最優，不等於全子集組合的全域最優。"
       },
       {
-        "title": "3. 奧卡姆剃刀原則 (Occam's Razor) 與特徵冗餘",
-        "content": "第 3～5 輪陸續加入州別與行政支出後，測試集 RMSE 從 8198.80 惡化回升至 9137.99。顯示加入行政支出與地理位置並未提供額外有效訊號，反而增加了模型複雜度與雜訊，產生輕微過度擬合 (Overfitting)。因此推薦採用雙特徵模型。"
+        "title": "3. 全子集窮舉檢驗與貪婪搜尋的盲點",
+        "content": "透過對全部 31 組非空特徵組合之窮舉檢驗，我們發現 3 特徵組合【R&D Spend + Administration + State_Florida】在同一測試集上的 RMSE 達 8171.65 (優於前向選擇之 8198.80)。這是因為前向選擇在第 2 步選入 Marketing Spend 後，永遠無法探索不包含 Marketing 的其他 3 特徵組合，生動展示了貪婪特徵選擇之路徑依賴性。"
       },
       {
-        "title": "4. 講義特徵選擇機制的限制與改善方向",
-        "content": "本實作忠實再現講義流程，直接以測試集挑選特徵。在學術與工程嚴謹性上，測試集應被完全隔離；若要實務化，建議改用 5-Fold 交叉驗證選特徵，以避免樂觀偏差。"
+        "title": "4. 單一切分下誤差變化的詮釋邊界與方法學限制",
+        "content": "在前向選擇第 3~5 輪中，測試集 RMSE 自 8198.80 上升至 9137.99。在本次 10 筆測試樣本切分下，這反映了新增參數帶來的額外變異；但單一次切分並不足以宣稱已證明模型過度擬合或後續特徵純屬雜訊。此外，以測試集作為特徵挑選依據，測試指標在統計上偏向樂觀，嚴謹實務應以交叉驗證進行篩選。"
       }
     ]
   }

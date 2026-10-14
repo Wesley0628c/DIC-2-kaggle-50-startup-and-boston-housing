@@ -45,16 +45,26 @@
         </div>
       </div>
 
-      <!-- Segmented Control for Problem Switcher (加分功能 1) -->
+      <!-- 加分功能 1: 下拉視窗呈現兩種 Problem 與全景切換 -->
+      <div class="problem-dropdown-wrapper">
+        <label for="problem-dropdown" class="dropdown-label"><i class="fa-solid fa-bullseye"></i> 題目切換：</label>
+        <select id="problem-dropdown" class="styled-select">
+          <option value="part1">Problem 1: CRISP-DM 基準模型</option>
+          <option value="part2">Problem 2: 前向特徵選擇最佳化</option>
+          <option value="all" selected>兩題整合全景儀表板 (All-in-One)</option>
+        </select>
+      </div>
+
+      <!-- Segmented Buttons Switcher (同步聯動) -->
       <div class="segmented-control" id="problem-switcher">
         <button class="segmented-btn" data-target="part1">
-          <i class="fa-solid fa-square-root-variable"></i> Problem 1: 基準模型
+          <i class="fa-solid fa-square-root-variable"></i> Problem 1
         </button>
-        <button class="segmented-btn active" data-target="part2">
-          <i class="fa-solid fa-crosshairs"></i> Problem 2: 前向特徵選擇
+        <button class="segmented-btn" data-target="part2">
+          <i class="fa-solid fa-crosshairs"></i> Problem 2
         </button>
-        <button class="segmented-btn" data-target="all">
-          <i class="fa-solid fa-layer-group"></i> 全景儀表板
+        <button class="segmented-btn active" data-target="all">
+          <i class="fa-solid fa-layer-group"></i> 全景檢視
         </button>
       </div>
 
@@ -118,12 +128,148 @@
     </section>
 
     <!-- ====================================================================
+         PROBLEM 1: CRISP-DM BASELINE MULTIPLE LINEAR REGRESSION
+         ==================================================================== -->
+    <section class="section-wrapper" id="part1">
+      <div class="section-header">
+        <div class="section-title-group">
+          <h2><i class="fa-solid fa-square-root-variable" style="color: var(--cyan-primary);"></i> Problem 1: CRISP-DM 多元線性回歸基準模型</h2>
+          <p class="section-subtitle">納入全部 5 個編碼特徵（基準州 California），以 Ordinary Least Squares 求解最優平面</p>
+        </div>
+        <div class="view-toggle-bar" id="p1-chart-toggle-group">
+          <button class="view-toggle-btn active" data-chart="actual_vs_pred">實際 vs 預測</button>
+          <button class="view-toggle-btn" data-chart="residual">殘差分佈</button>
+          <button class="view-toggle-btn" data-chart="python_img">Python 原圖</button>
+        </div>
+      </div>
+
+      <!-- CRISP-DM 6 階段流程卡片 Grid -->
+      <div class="crisp-stepper-grid" id="crisp-container">
+        <!-- Dynamically rendered -->
+      </div>
+
+      <!-- 實測多元回歸方程式卡片 -->
+      <div class="math-formula-box">
+        <div class="formula-label">
+          <i class="fa-solid fa-function"></i> 📐 實測多元線性回歸方程式 (Empirical Regression Formula)
+        </div>
+        <div class="formula-latex">
+          <strong>Profit</strong> = 42554.17 - 959.2842 &times; (State_Florida) + 699.3691 &times; (State_New York) + <span class="formula-highlight">0.7735</span> &times; (R&D Spend) + 0.0329 &times; (Administration) + 0.0366 &times; (Marketing Spend)
+        </div>
+        <div class="formula-notes">
+          <i class="fa-solid fa-circle-info" style="color: var(--cyan-primary);"></i> 
+          <strong>基準州（Reference State）：</strong> California (加州)。當企業位於 Florida 時，State_Florida = 1；位於 New York 時，State_New York = 1；若均為 0 則代表 California。
+        </div>
+      </div>
+
+      <!-- 回歸指標與評估圖並排 Grid -->
+      <div class="charts-grid">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3><i class="fa-solid fa-chart-column"></i> 特徵迴歸係數分析 (Regression Coefficients)</h3>
+              <p class="card-subtitle">檢視各特徵之估計係數與邊際經濟影響</p>
+            </div>
+          </div>
+          <div class="table-responsive">
+            <table class="styled-table">
+              <thead>
+                <tr>
+                  <th>特徵名稱</th>
+                  <th class="num-cell">係數估計值</th>
+                  <th>經濟解釋與邊際影響</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <td><code>Intercept (截距)</code></td>
+                  <td class="num-cell" style="font-weight: 700;">+42,554.17</td>
+                  <td style="color: var(--text-muted); font-size: 0.82rem;">位於 California 且三項支出皆為零時之基準利潤估計值</td>
+                </tr>
+                <tr>
+                  <td><code>State_Florida</code></td>
+                  <td class="num-cell" style="color: #f43f5e; font-weight: 700;">-959.28</td>
+                  <td style="color: var(--text-muted); font-size: 0.82rem;">相較 California 企業，Florida 企業平均獲利微幅少約 $959 美元（無統計顯著差異）</td>
+                </tr>
+                <tr>
+                  <td><code>State_New York</code></td>
+                  <td class="num-cell" style="color: var(--cyan-primary); font-weight: 700;">+699.37</td>
+                  <td style="color: var(--text-muted); font-size: 0.82rem;">相較 California 企業，New York 企業平均獲利微幅多約 $699 美元（無統計顯著差異）</td>
+                </tr>
+                <tr>
+                  <td><code>R&D Spend</code></td>
+                  <td class="num-cell" style="color: var(--emerald-optimal); font-weight: 800;">+0.7735</td>
+                  <td style="color: var(--emerald-optimal); font-size: 0.82rem; font-weight: 600;">每增加 1 美元研發投入，利潤預期增加 $0.77 美元（全模型最關鍵正向獲利驅動引擎）</td>
+                </tr>
+                <tr>
+                  <td><code>Administration</code></td>
+                  <td class="num-cell" style="color: var(--text-dim); font-weight: 700;">+0.0329</td>
+                  <td style="color: var(--text-muted); font-size: 0.82rem;">每增加 1 美元行政管理支出，利潤僅微幅變動 $0.03 美元（統計上不具顯著邊際貢獻）</td>
+                </tr>
+                <tr>
+                  <td><code>Marketing Spend</code></td>
+                  <td class="num-cell" style="color: var(--cyan-primary); font-weight: 700;">+0.0366</td>
+                  <td style="color: var(--text-muted); font-size: 0.82rem;">每增加 1 美元行銷推廣支出，利潤預期提升約 $0.04 美元（具穩定輔助成長效果）</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <div class="card-title-group">
+              <h3><i class="fa-solid fa-chart-scatter"></i> Actual vs. Predicted 與 殘差分析</h3>
+              <p class="card-subtitle">檢驗模型擬合優度與殘差隨機分佈假設</p>
+            </div>
+          </div>
+          <div class="chart-container-box">
+            <canvas id="chart-p1-eval"></canvas>
+            <img id="p1-python-img" src="images/part1_evaluation_plots.png" alt="Python Evaluation Plot" 
+                 style="display: none; width: 100%; height: 100%; object-fit: contain; border-radius: 8px;">
+          </div>
+        </div>
+      </div>
+
+      <!-- Part 1 測試集 10 筆逐筆預測明細 -->
+      <div class="card" style="margin-top: 24px;">
+        <div class="card-header">
+          <div class="card-title-group">
+            <h3><i class="fa-solid fa-list-check"></i> Part 1 測試集 10 筆逐筆預測明細 (Test Predictions Breakdown)</h3>
+            <p class="card-subtitle">嚴格按照 random_state=0 切分之 10 筆測試樣本實際獲利與 OLS 預測獲利比對</p>
+          </div>
+          <span class="badge-tag tag-info">10 Test Samples</span>
+        </div>
+        <div class="table-responsive">
+          <table class="styled-table" id="p1-test-table">
+            <thead>
+              <tr>
+                <th>原始 ID</th>
+                <th>所在州</th>
+                <th class="num-cell">研發支出</th>
+                <th class="num-cell">行政支出</th>
+                <th class="num-cell">行銷支出</th>
+                <th class="num-cell">實際獲利 ($)</th>
+                <th class="num-cell">預測獲利 ($)</th>
+                <th class="num-cell">殘差 ($) [實際-預測]</th>
+                <th class="num-cell">絕對誤差 ($)</th>
+              </tr>
+            </thead>
+            <tbody id="p1-test-tbody">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+    <!-- ====================================================================
          PROBLEM 2: FEATURE PROGRESSION & OCCAM'S RAZOR VALLEY AT K=2
          ==================================================================== -->
     <section class="section-wrapper" id="part2">
       <div class="section-header">
         <div class="section-title-group">
-          <h2><i class="fa-solid fa-crosshairs" style="color: var(--emerald-optimal);"></i> Part 2: 前向特徵選擇與奧卡姆剃刀谷地 (Valley at k=2)</h2>
+          <h2><i class="fa-solid fa-crosshairs" style="color: var(--emerald-optimal);"></i> Problem 2: 前向特徵選擇與奧卡姆剃刀谷地 (Valley at k=2)</h2>
           <p class="section-subtitle">探討模型複雜度（特徵數量 k）與泛化能力（測試集 RMSE / R²）之平衡點</p>
         </div>
         <div class="view-toggle-bar">
@@ -336,137 +482,50 @@
     </section>
 
     <!-- ====================================================================
-         PROBLEM 1: CRISP-DM BASELINE MULTIPLE LINEAR REGRESSION
+         加分功能 2: 自訂資料集即時載入與回歸引擎 (Custom Dataset Engine)
          ==================================================================== -->
-    <section class="section-wrapper" id="part1">
+    <section class="section-wrapper" id="custom-dataset">
       <div class="section-header">
         <div class="section-title-group">
-          <h2><i class="fa-solid fa-square-root-variable" style="color: var(--cyan-primary);"></i> Problem 1: CRISP-DM 多元線性回歸基準模型</h2>
-          <p class="section-subtitle">納入全部 5 個編碼特徵（基準州 California），以 Ordinary Least Squares 求解最優平面</p>
-        </div>
-        <div class="view-toggle-bar" id="p1-chart-toggle-group">
-          <button class="view-toggle-btn active" data-chart="actual_vs_pred">實際 vs 預測</button>
-          <button class="view-toggle-btn" data-chart="residual">殘差分佈</button>
-          <button class="view-toggle-btn" data-chart="python_img">Python 原圖</button>
+          <h2><i class="fa-solid fa-cloud-arrow-down" style="color: var(--cyan-primary);"></i> 加分功能：任意自訂資料集即時回歸引擎 (Custom Dataset Engine)</h2>
+          <p class="section-subtitle">支援輸入任意公開 CSV 網址（例如 GitHub RAW）或上傳本機檔案，即時於瀏覽器執行 OLS 模型訓練與評估</p>
         </div>
       </div>
 
-      <!-- CRISP-DM 6 階段流程卡片 Grid -->
-      <div class="crisp-stepper-grid" id="crisp-container">
-        <!-- Dynamically rendered -->
-      </div>
+      <div class="card">
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center; margin-bottom: 16px;">
+          <input type="text" id="custom-dataset-url" class="styled-input" style="flex: 1; min-width: 320px;" 
+                 value="https://raw.githubusercontent.com/Avik-Jain/100-Days-Of-ML-Code/master/datasets/50_Startups.csv" 
+                 placeholder="輸入 CSV 檔案公開網址...">
+          <button id="btn-fetch-custom-dataset" class="btn-primary">
+            <i class="fa-solid fa-bolt"></i> 載入並執行 OLS 分析
+          </button>
+        </div>
 
-      <!-- 實測多元回歸方程式卡片 -->
-      <div class="math-formula-box">
-        <div class="formula-label">
-          <i class="fa-solid fa-function"></i> 📐 實測多元線性回歸方程式 (Empirical Regression Formula)
-        </div>
-        <div class="formula-latex">
-          <strong>Profit</strong> = 42554.17 - 959.2842 &times; (State_Florida) + 699.3691 &times; (State_New York) + <span class="formula-highlight">0.7735</span> &times; (R&D Spend) + 0.0329 &times; (Administration) + 0.0366 &times; (Marketing Spend)
-        </div>
-        <div class="formula-notes">
-          <i class="fa-solid fa-circle-info" style="color: var(--cyan-primary);"></i> 
-          <strong>基準州（Reference State）：</strong> California (加州)。當企業位於 Florida 時，State_Florida = 1；位於 New York 時，State_New York = 1；若均為 0 則代表 California。
-        </div>
-      </div>
+        <div id="custom-dataset-status" style="display: none; padding: 14px 18px; border-radius: var(--radius-md); margin-top: 12px;"></div>
 
-      <!-- 回歸指標與評估圖並排 Grid -->
-      <div class="charts-grid">
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <h3><i class="fa-solid fa-chart-column"></i> 特徵迴歸係數分析 (Regression Coefficients)</h3>
-              <p class="card-subtitle">檢視各特徵之估計係數與邊際經濟影響</p>
+        <div id="custom-dataset-results" style="display: none; margin-top: 20px;">
+          <div class="kpi-grid">
+            <div class="kpi-card">
+              <span class="kpi-title">資料總筆數</span>
+              <div class="kpi-value" id="custom-row-count">50</div>
+              <span class="kpi-footer">完整讀取資料</span>
+            </div>
+            <div class="kpi-card highlight-optimal">
+              <span class="kpi-title">測試集 R² (決定係數)</span>
+              <div class="kpi-value" id="custom-r2">0.9347</div>
+              <span class="kpi-footer">模型擬合度</span>
+            </div>
+            <div class="kpi-card">
+              <span class="kpi-title">測試集 RMSE</span>
+              <div class="kpi-value" id="custom-rmse">$9,137.99</div>
+              <span class="kpi-footer">預測均方根誤差</span>
             </div>
           </div>
-          <div class="table-responsive">
-            <table class="styled-table">
-              <thead>
-                <tr>
-                  <th>特徵名稱</th>
-                  <th class="num-cell">係數估計值</th>
-                  <th>經濟解釋與邊際影響</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr>
-                  <td><code>Intercept (截距)</code></td>
-                  <td class="num-cell" style="font-weight: 700;">+42,554.17</td>
-                  <td style="color: var(--text-muted); font-size: 0.82rem;">位於 California 且三項支出皆為零時之基準利潤估計值</td>
-                </tr>
-                <tr>
-                  <td><code>State_Florida</code></td>
-                  <td class="num-cell" style="color: #f43f5e; font-weight: 700;">-959.28</td>
-                  <td style="color: var(--text-muted); font-size: 0.82rem;">相較 California 企業，Florida 企業平均獲利微幅少約 $959 美元（無統計顯著差異）</td>
-                </tr>
-                <tr>
-                  <td><code>State_New York</code></td>
-                  <td class="num-cell" style="color: var(--cyan-primary); font-weight: 700;">+699.37</td>
-                  <td style="color: var(--text-muted); font-size: 0.82rem;">相較 California 企業，New York 企業平均獲利微幅多約 $699 美元（無統計顯著差異）</td>
-                </tr>
-                <tr>
-                  <td><code>R&D Spend</code></td>
-                  <td class="num-cell" style="color: var(--emerald-optimal); font-weight: 800;">+0.7735</td>
-                  <td style="color: var(--emerald-optimal); font-size: 0.82rem; font-weight: 600;">每增加 1 美元研發投入，利潤預期增加 $0.77 美元（全模型最關鍵正向獲利驅動引擎）</td>
-                </tr>
-                <tr>
-                  <td><code>Administration</code></td>
-                  <td class="num-cell" style="color: var(--text-dim); font-weight: 700;">+0.0329</td>
-                  <td style="color: var(--text-muted); font-size: 0.82rem;">每增加 1 美元行政管理支出，利潤僅微幅變動 $0.03 美元（統計上不具顯著邊際貢獻）</td>
-                </tr>
-                <tr>
-                  <td><code>Marketing Spend</code></td>
-                  <td class="num-cell" style="color: var(--cyan-primary); font-weight: 700;">+0.0366</td>
-                  <td style="color: var(--text-muted); font-size: 0.82rem;">每增加 1 美元行銷推廣支出，利潤預期提升約 $0.04 美元（具穩定輔助成長效果）</td>
-                </tr>
-              </tbody>
-            </table>
+          <div class="math-formula-box" style="margin-top: 16px;">
+            <div class="formula-label"><i class="fa-solid fa-function"></i> 自訂資料集即時求得之 OLS 方程式：</div>
+            <div class="formula-latex" id="custom-formula-text"></div>
           </div>
-        </div>
-
-        <div class="card">
-          <div class="card-header">
-            <div class="card-title-group">
-              <h3><i class="fa-solid fa-chart-scatter"></i> Actual vs. Predicted 與 殘差分析</h3>
-              <p class="card-subtitle">檢驗模型擬合優度與殘差隨機分佈假設</p>
-            </div>
-          </div>
-          <div class="chart-container-box">
-            <canvas id="chart-p1-eval"></canvas>
-            <img id="p1-python-img" src="images/part1_evaluation_plots.png" alt="Python Evaluation Plot" 
-                 style="display: none; width: 100%; height: 100%; object-fit: contain; border-radius: 8px;">
-          </div>
-        </div>
-      </div>
-
-      <!-- Part 1 測試集 10 筆逐筆預測明細 -->
-      <div class="card" style="margin-top: 24px;">
-        <div class="card-header">
-          <div class="card-title-group">
-            <h3><i class="fa-solid fa-list-check"></i> Part 1 測試集 10 筆逐筆預測明細 (Test Predictions Breakdown)</h3>
-            <p class="card-subtitle">嚴格按照 random_state=0 切分之 10 筆測試樣本實際獲利與 OLS 預測獲利比對</p>
-          </div>
-          <span class="badge-tag tag-info">10 Test Samples</span>
-        </div>
-        <div class="table-responsive">
-          <table class="styled-table" id="p1-test-table">
-            <thead>
-              <tr>
-                <th>原始 ID</th>
-                <th>所在州</th>
-                <th class="num-cell">研發支出</th>
-                <th class="num-cell">行政支出</th>
-                <th class="num-cell">行銷支出</th>
-                <th class="num-cell">實際獲利 ($)</th>
-                <th class="num-cell">預測獲利 ($)</th>
-                <th class="num-cell">殘差 ($) [實際-預測]</th>
-                <th class="num-cell">絕對誤差 ($)</th>
-              </tr>
-            </thead>
-            <tbody id="p1-test-tbody">
-              <!-- Dynamically populated -->
-            </tbody>
-          </table>
         </div>
       </div>
     </section>
@@ -515,7 +574,7 @@
             <!-- State Selector -->
             <div style="margin-top: 20px;">
               <label style="font-weight: 700; font-size: 0.88rem; display: block; margin-bottom: 8px;">企業註冊州別 (State):</label>
-              <div style="display: flex; gap: 12px;">
+              <div style="display: flex; gap: 12px; flex-wrap: wrap;">
                 <label style="cursor: pointer; display: flex; align-items: center; gap: 6px;">
                   <input type="radio" name="sim-state" value="California" checked> California (基準州)
                 </label>

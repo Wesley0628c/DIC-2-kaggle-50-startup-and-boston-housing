@@ -144,6 +144,22 @@ def forward_selection(X_train_df: pd.DataFrame, X_test_df: pd.DataFrame,
             "coefficients": dict(zip(selected_features.copy(), [float(c) for c in best_model.coef_]))
         }
 
+        # 嚴謹計算訓練集 Adjusted R2 與 F 統計量 (n=40, p=step)
+        from scipy import stats
+        n_train = len(y_train)
+        p = step
+        df_resid = n_train - p - 1
+        y_tr_pred = best_model.predict(X_train_df[selected_features].values)
+        rss_tr = float(np.sum((y_train - y_tr_pred)**2))
+        tss_tr = float(np.sum((y_train - np.mean(y_train))**2))
+        train_adj_r2 = float(1.0 - (1.0 - best_train_perf["R2"]) * (n_train - 1) / df_resid) if df_resid > 0 else None
+        if df_resid > 0 and rss_tr > 1e-12:
+            f_stat = float(((tss_tr - rss_tr) / p) / (rss_tr / df_resid))
+            f_pval = float(1.0 - stats.f.cdf(f_stat, p, df_resid))
+        else:
+            f_stat = None
+            f_pval = None
+
         final_progression_summary.append({
             "step": step,
             "num_features": step,
@@ -155,7 +171,10 @@ def forward_selection(X_train_df: pd.DataFrame, X_test_df: pd.DataFrame,
             "test_mae": best_test_perf["MAE"],
             "test_mse": best_test_perf["MSE"],
             "train_rmse": best_train_perf["RMSE"],
-            "train_r2": best_train_perf["R2"]
+            "train_r2": best_train_perf["R2"],
+            "train_adj_r2": train_adj_r2,
+            "train_f_stat": f_stat,
+            "train_f_pvalue": f_pval
         })
 
     return rounds_detailed_log, final_progression_summary, models_per_step

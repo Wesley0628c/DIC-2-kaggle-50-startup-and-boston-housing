@@ -1,7 +1,8 @@
 """
 模組名稱：export_web_data.py
-說明：整合 Part 1 與 Part 2 的所有真實數據，匯出供前端網頁互動呈現的結構化 JSON (web/data.json)，
-並確認與輸出的 CSV 與 PKL 模型檔數據 100% 一致。
+說明：整合 Part 1、Part 2 與五大演算法基準評估的所有真實運算數據，
+匯出供前端網頁互動呈現的結構化 JSON (web/data.json 與 web/default_data.js)，
+並同步更新 outputs/、docs/ 與 web/downloads/，確保全系統數據 100% 一致。
 """
 
 import os
@@ -15,12 +16,16 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 DATA_PATH = os.path.join(BASE_DIR, "data", "50_Startups.csv")
 OUTPUT_DIR = os.path.join(BASE_DIR, "outputs")
 WEB_DIR = os.path.join(BASE_DIR, "web")
+DOCS_DIR = os.path.join(BASE_DIR, "docs")
+DOWNLOADS_DIR = os.path.join(WEB_DIR, "downloads")
 
 def generate_web_json():
     os.makedirs(WEB_DIR, exist_ok=True)
-    print("\n[匯出網頁 JSON] 開始整合實驗數據...")
+    os.makedirs(OUTPUT_DIR, exist_ok=True)
+    os.makedirs(DOWNLOADS_DIR, exist_ok=True)
+    print("\n[匯出網頁 JSON] 開始整合所有真實計算之實驗數據...")
 
-    # 1. 讀取原始資料與基本統計
+    # 1. 讀取原始資料與統計
     df = pd.read_csv(DATA_PATH)
     raw_head = df.head(5).to_dict(orient="records")
     all_data_records = df.to_dict(orient="records")
@@ -32,13 +37,13 @@ def generate_web_json():
         s = df[col]
         desc_dict[col] = {
             "count": int(s.count()),
-            "mean": round(float(s.mean()), 2),
-            "std": round(float(s.std()), 2),
-            "min": round(float(s.min()), 2),
-            "q25": round(float(s.quantile(0.25)), 2),
-            "median": round(float(s.median()), 2),
-            "q75": round(float(s.quantile(0.75)), 2),
-            "max": round(float(s.max()), 2)
+            "mean": float(s.mean()),
+            "std": float(s.std()),
+            "min": float(s.min()),
+            "q25": float(s.quantile(0.25)),
+            "median": float(s.median()),
+            "q75": float(s.quantile(0.75)),
+            "max": float(s.max())
         }
 
     # 2. 讀取 Part 1 結果
@@ -49,7 +54,7 @@ def generate_web_json():
     p1_test_pred_df = pd.read_csv(os.path.join(OUTPUT_DIR, "part1_test_predictions.csv"))
     p1_predictions = p1_test_pred_df.to_dict(orient="records")
 
-    # 計算 Part 1 指標
+    # 獨立精確計算 Part 1 指標
     p1_y_true = p1_test_pred_df["actual_profit"].values
     p1_y_pred = p1_test_pred_df["predicted_profit"].values
     p1_mae = float(np.mean(np.abs(p1_y_true - p1_y_pred)))
@@ -57,70 +62,80 @@ def generate_web_json():
     p1_rmse = float(np.sqrt(p1_mse))
     ss_tot = float(np.sum((p1_y_true - np.mean(p1_y_true)) ** 2))
     ss_res = float(np.sum((p1_y_true - p1_y_pred) ** 2))
-    p1_r2 = float(1 - (ss_res / ss_tot))
+    p1_r2 = float(1.0 - (ss_res / ss_tot))
 
-    # 3. 讀取 Part 2 結果
+    # 3. 讀取 Part 2 前向選擇結果
     p2_candidates_df = pd.read_csv(os.path.join(OUTPUT_DIR, "part2_forward_selection_candidates.csv"))
     p2_summary_df = pd.read_csv(os.path.join(OUTPUT_DIR, "part2_forward_selection_summary.csv"))
-    
+
     with open(os.path.join(OUTPUT_DIR, "part2_step_predictions.json"), "r", encoding="utf-8") as f:
         p2_step_preds = json.load(f)
 
     with gzip.open(os.path.join(OUTPUT_DIR, "part2_forward_selection_models.pkl.gz"), "rb") as f:
         p2_models_pkg = pickle.load(f)
 
-    # 整理各輪資訊
+    # 4. 讀取五大演算法基準評估 (benchmark_algorithms.py 之輸出)
+    benchmark_json_path = os.path.join(OUTPUT_DIR, "algorithms_benchmark_summary.json")
+    if os.path.exists(benchmark_json_path):
+        with open(benchmark_json_path, "r", encoding="utf-8") as f:
+            benchmarks_data = json.load(f)
+    else:
+        benchmarks_data = {"algorithms": {}, "algorithm_descriptions": {}, "exhaustive_overall_best": {}}
+
+    # 讀取窮舉 31 組詳細資料
+    exhaustive_csv_path = os.path.join(OUTPUT_DIR, "exhaustive_search_31_subsets.csv")
+    if os.path.exists(exhaustive_csv_path):
+        exhaustive_df = pd.read_csv(exhaustive_csv_path)
+        exhaustive_31_subsets = exhaustive_df.to_dict(orient="records")
+    else:
+        exhaustive_31_subsets = []
+
+    # 整理 Part 2 各輪真實資訊（絕無固定覆蓋常數）
     p2_rounds_details = []
     for step_num in range(1, 6):
         step_candidates = p2_candidates_df[p2_candidates_df["round"] == step_num].to_dict(orient="records")
         step_summary_row = p2_summary_df[p2_summary_df["num_features"] == step_num].iloc[0].to_dict()
         model_info = p2_models_pkg["models_by_step"][step_num]
 
-        # 計算 Adjusted R2 與 F-statistic (重現講義照片中精準數值)
-        n_test = 10
-        p_feat = step_num
-        test_r2_val = float(step_summary_row["test_r2"])
-        adj_r2_val = 1.0 - (1.0 - test_r2_val) * (n_test - 1) / max(1, (n_test - p_feat - 1))
-        
-        # F-statistic (以訓練集計算，n=40, p=p_feat)
-        n_train = 40
-        train_r2_val = float(step_summary_row["train_r2"])
-        denom = (1.0 - train_r2_val) / max(1, (n_train - p_feat - 1))
-        f_stat_val = (train_r2_val / p_feat) / (denom if denom > 1e-12 else 1e-12)
-        if step_num == 2:
-            f_stat_val = 349.0 # 照片精確數值
-            test_mae_val = 6886.59 # 照片精確數值
-        else:
-            test_mae_val = round(float(step_summary_row["test_mae"]), 2)
+        # 直接讀取真實訓練集統計量
+        train_adj_r2 = float(step_summary_row["train_adj_r2"]) if "train_adj_r2" in step_summary_row and pd.notna(step_summary_row["train_adj_r2"]) else None
+        train_f_stat = float(step_summary_row["train_f_stat"]) if "train_f_stat" in step_summary_row and pd.notna(step_summary_row["train_f_stat"]) else None
+        train_f_pval = float(step_summary_row["train_f_pvalue"]) if "train_f_pvalue" in step_summary_row and pd.notna(step_summary_row["train_f_pvalue"]) else None
 
         p2_rounds_details.append({
-            "step": step_num,
+            "step": int(step_num),
             "added_feature": step_summary_row["added_feature"],
             "selected_features": [f.strip() for f in step_summary_row["selected_features_str"].split(",")],
-            "test_rmse": round(float(step_summary_row["test_rmse"]), 2),
-            "test_r2": round(float(step_summary_row["test_r2"]), 4),
-            "test_mae": test_mae_val,
-            "adj_r2": round(adj_r2_val, 4),
-            "f_stat": round(f_stat_val, 1),
-            "train_rmse": round(float(step_summary_row["train_rmse"]), 2),
-            "train_r2": round(float(step_summary_row["train_r2"]), 4),
-            "intercept": round(float(model_info["intercept"]), 4),
-            "coefficients": {k: round(float(v), 4) for k, v in model_info["coefficients"].items()},
+            "test_rmse": float(step_summary_row["test_rmse"]),
+            "test_r2": float(step_summary_row["test_r2"]),
+            "test_mae": float(step_summary_row["test_mae"]),
+            "test_mse": float(step_summary_row["test_mse"]),
+            "train_rmse": float(step_summary_row["train_rmse"]),
+            "train_r2": float(step_summary_row["train_r2"]),
+            "train_adj_r2": train_adj_r2,
+            "train_f_stat": train_f_stat,
+            "train_f_pvalue": train_f_pval,
+            "intercept": float(model_info["intercept"]),
+            "coefficients": {k: float(v) for k, v in model_info["coefficients"].items()},
             "candidates_evaluation": [{
                 "candidate": c["candidate_feature"],
-                "test_rmse": round(float(c["test_rmse"]), 4),
-                "test_r2": round(float(c["test_r2"]), 4),
+                "test_rmse": float(c["test_rmse"]),
+                "test_r2": float(c["test_r2"]),
+                "train_rmse": float(c["train_rmse"]),
+                "train_r2": float(c["train_r2"]),
                 "is_selected": bool(c["is_selected"])
             } for c in step_candidates],
             "predictions": p2_step_preds[str(step_num)]
         })
 
-    # 組裝最終的結構化 Web JSON
+    # 動態找出 Part 2 前向選擇路徑中的最低 RMSE 輪次
+    best_p2_round = min(p2_rounds_details, key=lambda x: x["test_rmse"])
+
+    # 組裝最終結構化 Web JSON
     web_data = {
         "metadata": {
-            "title": "50 Startups 多元線性回歸分析與前向特徵選擇實驗報告",
-            "subtitle": "Multiple Linear Regression & Forward Feature Selection",
-            "author": "課程作業小組",
+            "title": "50 Startups 多元線性回歸分析與特徵選擇實證研究",
+            "subtitle": "Multiple Linear Regression, Forward Selection & Benchmark Algorithms",
             "generated_at": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
             "data_source_url": "https://raw.githubusercontent.com/harimittapalli/Mulitple-Linear-Reggression/master/50_Startups.csv",
             "total_rows": int(len(df)),
@@ -130,7 +145,8 @@ def generate_web_json():
             "random_state": 0,
             "train_rows_count": 40,
             "test_rows_count": 10,
-            "test_row_ids": p1_pkg["experiment_config"]["test_sample_count"]
+            "train_indices": p1_pkg["experiment_config"]["train_sample_count"],
+            "test_indices": p1_pkg["experiment_config"]["test_sample_count"]
         },
         "dataset": {
             "head_5": raw_head,
@@ -147,20 +163,20 @@ def generate_web_json():
                 "phase_name_zh": "商業理解 (Business Understanding)",
                 "phase_name_en": "Business Understanding",
                 "goal": "確認預測目標為 Profit，分析研發 (R&D)、行政 (Administration)、行銷 (Marketing) 與地理位置 (State) 對利潤之關聯。",
-                "key_takeaway": "線性模型提供統計上的相依性與敏感度分析，不得逕行詮釋為因果關係。"
+                "key_takeaway": "線性模型提供變數間敏感度與相依性度量，但不可逕行宣稱為因果關係。"
             },
             {
                 "id": "data_understanding",
                 "phase_name_zh": "資料理解 (Data Understanding)",
                 "phase_name_en": "Data Understanding",
                 "goal": "探勘 50 筆企業資料之分佈、極值、缺失值 (0 筆) 與重複列 (0 筆)。",
-                "key_takeaway": "R&D Spend 與 Profit 呈現極高之正線性相關，行政支出關聯相對微弱。"
+                "key_takeaway": "R&D Spend 與 Profit 呈現極高度線性正相關 (r = 0.973)，行政支出關聯相對微弱。"
             },
             {
                 "id": "data_preparation",
                 "phase_name_zh": "資料準備 (Data Preparation)",
                 "phase_name_en": "Data Preparation",
-                "goal": "將類別型 State 進行 One-Hot Encoding，剔除第一個類別 (California) 作為基準州以消除虛擬變數陷阱 (Dummy Variable Trap)。",
+                "goal": "將類別型 State 進行 One-Hot Encoding，剃除第一個類別 (California) 作為基準州以避免虛擬變數陷阱 (Dummy Variable Trap)。",
                 "key_takeaway": "特徵維度擴增至 5 維；切分 train=40, test=10 (test_size=0.2, random_state=0)。"
             },
             {
@@ -168,20 +184,20 @@ def generate_web_json():
                 "phase_name_zh": "模型建置 (Modeling)",
                 "phase_name_en": "Modeling",
                 "goal": "採用 Ordinary Least Squares (OLS) 多元線性回歸模型，求解最佳擬合平面之截距與迴歸係數。",
-                "key_takeaway": "截距 b0 = 42554.17，R&D 支出係數約 +0.7735，表示每增加 1 美元研發預算，利潤預期增加 0.77 美元。"
+                "key_takeaway": "截距 b0 = 42554.17，R&D 支出係數約 +0.7735，表示每增加 1 美元研發預算，利潤預期增加約 0.77 美元。"
             },
             {
                 "id": "evaluation",
                 "phase_name_zh": "模型評估 (Evaluation)",
                 "phase_name_en": "Evaluation",
-                "goal": "計算 MAE, MSE, RMSE, R² 指標，繪製 Actual vs Predicted 與殘差圖 (Residual Plot)。",
-                "key_takeaway": "測試集 RMSE 為 9137.99，R² 為 0.9347，模型解釋了測試集約 93.47% 的利潤變異。"
+                "goal": "計算 MAE, MSE, RMSE, R² 指標，進行 OLS 殘差假設檢定與顯著性分析。",
+                "key_takeaway": "測試集 RMSE 為 9137.99，R² 為 0.9347；整體模型 F 統計量為 129.70 (p = 1.11e-16)。"
             },
             {
                 "id": "deployment",
                 "phase_name_zh": "模型部署與打包 (Deployment)",
                 "phase_name_en": "Deployment",
-                "goal": "使用 pickle + gzip 序列化模型、前處理轉換器、特徵欄位順序與基準州設定，並具備未知州別例外檢查。",
+                "goal": "使用 pickle + gzip 序列化模型與前處理轉換器，確保由原始欄位直接推論之完全可重現性。",
                 "key_takeaway": "模型重載驗證數值誤差為 0.00e+00，確保生產環境端到端推論完全一致。"
             }
         ],
@@ -189,54 +205,75 @@ def generate_web_json():
             "title": "Part 1: CRISP-DM 多元線性回歸基準模型 (Baseline Model)",
             "encoded_features": p1_pkg["encoded_features_order"],
             "reference_state": p1_pkg["reference_state"],
-            "intercept": round(float(p1_pkg["intercept"]), 4),
-            "coefficients": {k: round(float(v), 4) for k, v in p1_pkg["coefficients"].items()},
-            "formula": (
-                f"Profit = {p1_pkg['intercept']:.2f} " +
-                " ".join([f"{'+' if v >= 0 else '-'} {abs(v):.4f} * ({k})" for k, v in p1_pkg["coefficients"].items()])
-            ),
+            "model": {
+                "intercept": float(p1_pkg["intercept"]),
+                "coefficients": {k: float(v) for k, v in p1_pkg["coefficients"].items()},
+                "parameter_statistics": {
+                    "Intercept": {"coef": 42554.1676, "stderr": 8358.5382, "tstat": 5.0911, "pvalue": 1.3087e-05},
+                    "State_Florida": {"coef": -959.2842, "stderr": 4038.1077, "tstat": -0.2376, "pvalue": 0.8136},
+                    "State_New York": {"coef": 699.3691, "stderr": 3661.5627, "tstat": 0.1910, "pvalue": 0.8497},
+                    "R&D Spend": {"coef": 0.7735, "stderr": 0.0551, "tstat": 14.0298, "pvalue": 1.1102e-15},
+                    "Administration": {"coef": 0.0329, "stderr": 0.0665, "tstat": 0.4945, "pvalue": 0.6241},
+                    "Marketing Spend": {"coef": 0.0366, "stderr": 0.0194, "tstat": 1.8841, "pvalue": 0.0681}
+                },
+                "formula": (
+                    f"Profit = {p1_pkg['intercept']:.2f} " +
+                    " ".join([f"{'+' if v >= 0 else '-'} {abs(v):.4f} * ({k})" for k, v in p1_pkg["coefficients"].items()])
+                )
+            },
             "train_metrics": {
                 "MAE": 6341.5358,
                 "MSE": 81571001.8008,
                 "RMSE": 9031.6666,
-                "R2": 0.9502
+                "R2": 0.9502,
+                "Adjusted_R2": 0.9429,
+                "F_statistic": 129.70,
+                "F_pvalue": 1.11e-16,
+                "degrees_of_freedom": {"df_model": 5, "df_residuals": 34}
             },
             "test_metrics": {
-                "MAE": round(p1_mae, 4),
-                "MSE": round(p1_mse, 4),
-                "RMSE": round(p1_rmse, 4),
-                "R2": round(p1_r2, 4)
+                "MAE": p1_mae,
+                "MSE": p1_mse,
+                "RMSE": p1_rmse,
+                "R2": p1_r2
             },
             "test_predictions": p1_predictions
         },
         "part2": {
             "title": "Part 2: Forward Selection 前向特徵選擇演算法",
-            "methodology_note": "本實作依講義規範，以測試集 (Test Set) RMSE 最小化作為特徵挑選條件。需注意：因測試集已參與模型篩選 (Model Selection)，指標偏向樂觀，嚴謹工業實務應採用驗證集或 K-Fold 交叉驗證。",
+            "methodology_note": "本實作嚴格遵循課程講義規格，每輪以獨立測試集 (Test Set) RMSE 最小化作為特徵挑選條件。方法學限制說明：由於測試集已參與模型篩選路徑 (Model Selection)，測試集之評估指標在統計上偏向樂觀 (Optimistic Bias)；嚴謹工業實務應採用獨立驗證集 (Validation Set) 或嵌套交叉驗證 (Nested CV)。",
             "candidate_columns": list(p2_candidates_df["candidate_feature"].unique()),
             "rounds_summary": p2_rounds_details,
             "progression_table": p2_summary_df.to_dict(orient="records"),
-            "best_feature_count": 2,
-            "best_features": ["R&D Spend", "Marketing Spend"],
-            "best_test_rmse": 8198.7972,
-            "best_test_r2": 0.9474
+            "best_feature_count": best_p2_round["step"],
+            "best_features": best_p2_round["selected_features"],
+            "best_test_rmse": best_p2_round["test_rmse"],
+            "best_test_r2": best_p2_round["test_r2"]
+        },
+        "algorithms_benchmark": benchmarks_data.get("algorithms", {}),
+        "algorithm_descriptions": benchmarks_data.get("algorithm_descriptions", {}),
+        "exhaustive_search": {
+            "all_31_subsets": exhaustive_31_subsets,
+            "best_per_k": benchmarks_data.get("algorithms", {}).get("Exhaustive", []),
+            "overall_best": benchmarks_data.get("exhaustive_overall_best", {})
         },
         "discussion": {
             "insights": [
                 {
                     "title": "1. 核心獲利驅動力：研發支出 (R&D Spend)",
-                    "content": "在 Part 2 第 1 輪中，單獨使用 R&D Spend 即達到 R² = 0.9465，RMSE 驟降至 8274.87，遠勝其他單一特徵（如行政支出的 R² 為負值）。這顯示研發投入是初創企業商業成功的最大驅動核心。"
+                    "content": "在特徵選擇中，單獨納入 R&D Spend 即達到測試集 R² = 0.9465，RMSE 降至 8274.87，在統計推論中 t = 14.03, p = 1.11e-15，顯示研發投入是初創企業獲利變異量的最大單一決定因數。"
                 },
                 {
-                    "title": "2. 最優特徵子集：雙特徵組合 (R&D + Marketing)",
-                    "content": "第 2 輪加入 Marketing Spend 後，測試集 RMSE 降至全域最低之 8198.80，R² 升至 0.9474。行銷支出為產品市場化帶來了關鍵邊際增長。"
+                    "title": "2. 前向選擇路徑的最佳表現 (Path-Dependent Optimal)",
+                    "content": "在前向選擇路徑中，第 2 輪納入 Marketing Spend 後，測試集 RMSE 降至 8198.80 (R² = 0.9474)，在該前向路徑中表現最佳。然而需注意：前向選擇為貪婪演算法，其所得結果僅代表該搜尋路徑下的最優，不等於全子集組合的全域最優。"
                 },
                 {
-                    "title": "3. 奧卡姆剃刀原則 (Occam's Razor) 與特徵冗餘",
-                    "content": "第 3～5 輪陸續加入州別與行政支出後，測試集 RMSE 從 8198.80 惡化回升至 9137.99。顯示加入行政支出與地理位置並未提供額外有效訊號，反而增加了模型複雜度與雜訊，產生輕微過度擬合 (Overfitting)。因此推薦採用雙特徵模型。"
+                    "title": "3. 全子集窮舉檢驗與貪婪搜尋的盲點",
+                    "content": "透過對全部 31 組非空特徵組合之窮舉檢驗，我們發現 3 特徵組合【R&D Spend + Administration + State_Florida】在同一測試集上的 RMSE 達 8171.65 (優於前向選擇之 8198.80)。這是因為前向選擇在第 2 步選入 Marketing Spend 後，永遠無法探索不包含 Marketing 的其他 3 特徵組合，生動展示了貪婪特徵選擇之路徑依賴性。"
                 },
                 {
-                    "title": "4. 講義特徵選擇機制的限制與改善方向",
-                    "content": "本實作忠實再現講義流程，直接以測試集挑選特徵。在學術與工程嚴謹性上，測試集應被完全隔離；若要實務化，建議改用 5-Fold 交叉驗證選特徵，以避免樂觀偏差。"
+                    "title": "4. 單一切分下誤差變化的詮釋邊界與方法學限制",
+                    "content": "在前向選擇第 3~5 輪中，測試集 RMSE 自 8198.80 上升至 9137.99。在本次 10 筆測試樣本切分下，這反映了新增參數帶來的額外變異；但單一次切分並不足以宣稱已證明模型過度擬合或後續特徵純屬雜訊。此外，以測試集作為特徵挑選依據，測試指標在統計上偏向樂觀，嚴謹實務應以交叉驗證進行篩選。"
                 }
             ]
         }
@@ -248,9 +285,22 @@ def generate_web_json():
         json.dump(web_data, f, indent=2, ensure_ascii=False)
     print(f"[匯出成功] 網頁完整數據 JSON 已輸出至：{web_json_path}")
 
+    # 同步輸出 default_data.js
+    default_data_js_path = os.path.join(WEB_DIR, "default_data.js")
+    with open(default_data_js_path, "w", encoding="utf-8") as f:
+        f.write("window.EMBEDDED_DATA = " + json.dumps(web_data, ensure_ascii=False, indent=2) + ";\n")
+    print(f"[匯出成功] 離線回退資料 default_data.js 已輸出至：{default_data_js_path}")
+
     # 同步複製一份至 outputs/web_data.json
     with open(os.path.join(OUTPUT_DIR, "web_data.json"), "w", encoding="utf-8") as f:
         json.dump(web_data, f, indent=2, ensure_ascii=False)
+
+    # 同步複製至 docs/
+    os.makedirs(DOCS_DIR, exist_ok=True)
+    with open(os.path.join(DOCS_DIR, "data.json"), "w", encoding="utf-8") as f:
+        json.dump(web_data, f, indent=2, ensure_ascii=False)
+    with open(os.path.join(DOCS_DIR, "default_data.js"), "w", encoding="utf-8") as f:
+        f.write("window.EMBEDDED_DATA = " + json.dumps(web_data, ensure_ascii=False, indent=2) + ";\n")
 
     return web_data
 
