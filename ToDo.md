@@ -17,3 +17,5 @@
 - [x] Step 13：驗證本機啟動、資料載入、切換、下載及手機版面。
 - [x] Step 14：完成 README.md、results.md 與方法限制說明。
 - [x] Step 15：從乾淨環境執行完整流程，核對成果後完成勾選。
+- [x] Step 16：全新原創 Aether Quant Lab 科技感視覺 UI 改版、奧卡姆剃刀谷地 (Valley at k=2) 突出標示、五法同台動態對比圖表，並成功部署推送至 GitHub 遠端倉庫。
+
